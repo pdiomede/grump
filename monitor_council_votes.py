@@ -262,6 +262,17 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             font-weight: 300;
         }}
         
+        .header-link {{
+            color: #F8F6FF;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }}
+        
+        .header-link:hover {{
+            opacity: 0.7;
+            text-decoration: underline;
+        }}
+        
         .content {{
             padding: 30px;
             background: #0C0A1D;
@@ -593,8 +604,8 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
 <body>
     <div class="container">
         <div class="header">
-            <h1>☑️ The Graph Council Voting Monitor</h1>
-            <p>Tracking voting activity for {SNAPSHOT_SPACE}</p>
+            <h1>🗳️ The Graph Council Voting Monitor</h1>
+            <p><a href="https://snapshot.org/#/s:{SNAPSHOT_SPACE}" target="_blank" class="header-link">Tracking voting activity for The Graph Council</a></p>
             <p>Last updated: {timestamp}</p>
         </div>
         
