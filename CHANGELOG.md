@@ -5,7 +5,7 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [v0.0.3] - 2025-10-27
 
 ### Added
 
@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - When set to "Y", all proposals are displayed regardless of voting completion
   - Helps focus attention on proposals that still need votes
   - Active Proposals counter updates dynamically based on displayed proposals
+  - Console output displays current setting for transparency
+
+### Changed
+- **Version Bump**
+  - Updated VERSION to 0.0.3
+  - Reflects new configuration feature addition
 
 ## [v0.0.2] - 2025-10-27
 
@@ -298,11 +304,13 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.3] - 2025-10-27** - Hide completed proposals feature
 - **[v0.0.2] - 2025-10-27** - UI improvements, color-coding, days left counter
 - **[v0.0.1] - 2025-10-27** - Initial release
 
 ---
 
+[v0.0.3]: https://github.com/pdiomede/grump/releases/tag/v0.0.3
 [v0.0.2]: https://github.com/pdiomede/grump/releases/tag/v0.0.2
 [v0.0.1]: https://github.com/pdiomede/grump/releases/tag/v0.0.1
 

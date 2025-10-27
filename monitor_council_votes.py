@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 LAST_UPDATE = "2025-10-27"
 
 import os
@@ -675,7 +675,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         
         html += """
             <div class="proposals-section">
-                <h2 class="section-title">Active Proposals</h2>
+                <h2 class="section-title">Active Alerts</h2>
 """
         
         for proposal in proposals_to_display:
