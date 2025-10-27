@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "v0.0.1"
+VERSION = "0.0.1"
 LAST_UPDATE = "2025-10-27"
 
 import os
@@ -504,16 +504,64 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         }}
         
         .footer {{
-            text-align: center;
             padding: 20px 30px;
             background: #0C0A1D;
             color: #9CA3AF;
             font-size: 14px;
+            margin-top: 0;
             border-top: 1px solid #9CA3AF;
         }}
         
-        .footer p {{
-            margin: 5px 0;
+        .footer-content {{
+            max-width: 1140px;
+            margin: 0 auto;
+        }}
+        
+        .footer-top {{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }}
+        
+        .footer-left {{
+            text-align: left;
+            flex: 0 0 auto;
+        }}
+        
+        .footer-right {{
+            text-align: right;
+            flex: 0 0 auto;
+        }}
+        
+        .footer a {{
+            color: #9CA3AF;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }}
+        
+        .footer a:hover {{
+            color: #F8F6FF;
+            text-decoration: underline;
+        }}
+        
+        .version {{
+            font-weight: 600;
+            color: #9CA3AF;
+        }}
+        
+        .footer-separator {{
+            color: #9CA3AF;
+        }}
+        
+        .github-icon {{
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+            margin-right: 5px;
         }}
         
         .snapshot-link {{
@@ -526,12 +574,26 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             color: #F8F6FF;
             text-decoration: underline;
         }}
+        
+        @media (max-width: 768px) {{
+            .footer-top {{
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }}
+            
+            .footer-left,
+            .footer-right {{
+                text-align: left;
+                width: 100%;
+            }}
+        }}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🗳️ The Graph Council Voting Monitor</h1>
+            <h1>☑️ The Graph Council Voting Monitor</h1>
             <p>Tracking voting activity for {SNAPSHOT_SPACE}</p>
             <p>Last updated: {timestamp}</p>
         </div>
@@ -557,7 +619,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     if data['proposals']:
         html += """
             <div class="proposals-section">
-                <h2 class="section-title">📋 Active Proposals</h2>
+                <h2 class="section-title">Active Proposals</h2>
 """
         
         for proposal in data['proposals']:
@@ -672,9 +734,18 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         </div>
         
         <div class="footer">
-            <p>Monitoring <strong>{SNAPSHOT_SPACE}</strong></p>
-            <p>Alert threshold: <strong>{ALERT_THRESHOLD_DAYS} days</strong></p>
-            <p>Version: <strong>{VERSION}</strong> | Last Update: <strong>{LAST_UPDATE}</strong></p>
+            <div class="footer-content">
+                <div class="footer-top">
+                    <div class="footer-left">
+                        <a href="https://snapshot.org/#/s:{SNAPSHOT_SPACE}" target="_blank">Monitoring Snapshot votes for The Graph Council</a>
+                    </div>
+                    <div class="footer-right">
+                        <span class="version">v{VERSION}</span>
+                        <span class="footer-separator">-</span>
+                        <svg class="github-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><a href="https://github.com/pdiomede/grump" target="_blank">View repo on GitHub</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
