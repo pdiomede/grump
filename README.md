@@ -11,6 +11,118 @@ The Graph Council consists of 6 members who vote on Graph Governance Proposals (
 - Generating alerts when members haven't voted after a specified period
 - Producing a beautiful HTML report with copy-to-clipboard functionality
 
+## 🔧 How It Works
+
+### Script Logic Flow
+
+1. **Load Configuration**
+   - Reads environment variables from `.env` file
+   - Loads council member wallet addresses from `wallets.txt`
+   - Sets alert threshold and output paths
+
+2. **Fetch Active Proposals**
+   - Connects to Snapshot GraphQL API (`https://hub.snapshot.org/graphql`)
+   - Queries for active proposals in the `council.graphprotocol.eth` space
+   - Retrieves proposal metadata: title, creation date, end date, state
+
+3. **Fetch Voting Data**
+   - For each active proposal, fetches all votes
+   - Extracts voter addresses (normalized to lowercase)
+   - Creates a set of voters for quick lookup
+
+4. **Analyze Voting Status**
+   - Compares council member addresses against voters
+   - Identifies non-voters for each proposal
+   - Calculates:
+     - Days since proposal creation
+     - Days remaining until voting ends
+     - Voting percentage (council votes / total council members)
+
+5. **Generate Alerts**
+   - Creates alerts for proposals older than threshold (default: 5 days)
+   - Only alerts for council members who haven't voted
+   - Alerts are displayed inline within each proposal card
+
+6. **Color-Code Metrics**
+   - **Voting Status:**
+     - 🟢 Green: All council members voted (100%)
+     - 🟡 Yellow: ≥50% voted but not all
+     - 🔴 Red: <50% voted
+   - **Time Remaining:**
+     - 🟢 Green: 5+ days left
+     - 🟡 Yellow: 2-4 days left
+     - 🔴 Red: <2 days left
+
+7. **Generate HTML Report**
+   - Creates a static HTML dashboard with:
+     - Summary cards (alerts, proposals, members)
+     - Proposal cards with voting statistics
+     - Inline alerts for non-voters
+     - Copy-to-clipboard buttons
+     - Direct links to Snapshot
+   - Uses dark theme with Poppins font
+   - Fully responsive design
+
+### Data Flow Diagram
+
+```
+┌─────────────────┐
+│  Configuration  │
+│  (.env, txt)    │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Snapshot API   │◄──── GraphQL Query (Active Proposals)
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Vote Analysis  │◄──── Compare voters vs council members
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  Alert Logic    │◄──── Check thresholds & generate alerts
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│  HTML Generator │◄──── Create styled dashboard
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│   index.html    │◄──── Static report with all data
+└─────────────────┘
+```
+
+### Key Algorithms
+
+**Voting Percentage Calculation:**
+```python
+vote_percentage = (council_votes / COUNCIL_MEMBERS_COUNT) * 100
+if council_votes == COUNCIL_MEMBERS_COUNT:
+    color = "green"  # All voted
+elif vote_percentage >= 50:
+    color = "yellow"  # Most voted
+else:
+    color = "red"  # Few voted
+```
+
+**Days Left Calculation:**
+```python
+now = datetime.now(timezone.utc)
+end_date = datetime.fromtimestamp(end_timestamp, tz=timezone.utc)
+days_left = (end_date - now).days
+```
+
+**Alert Threshold Check:**
+```python
+if days_old >= ALERT_THRESHOLD_DAYS and non_voters:
+    generate_alert(proposal, non_voters)
+```
+
 ## 📋 Features
 
 - ✅ Fetches active proposals from Snapshot GraphQL API

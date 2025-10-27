@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 LAST_UPDATE = "2025-10-27"
 
 import os
@@ -160,7 +160,13 @@ def analyze_voting_status(council_wallets: List[str]) -> Dict:
         proposal_id = proposal["id"]
         proposal_title = proposal["title"]
         created_timestamp = proposal["created"]
+        end_timestamp = proposal["end"]
         days_old = calculate_days_since(created_timestamp)
+        
+        # Calculate days left until proposal ends
+        now = datetime.now(timezone.utc)
+        end_date = datetime.fromtimestamp(end_timestamp, tz=timezone.utc)
+        days_left = (end_date - now).days
         
         # Fetch votes for this proposal
         votes = fetch_votes_for_proposal(proposal_id)
@@ -189,7 +195,9 @@ def analyze_voting_status(council_wallets: List[str]) -> Dict:
             "id": proposal_id,
             "title": proposal_title,
             "created": created_timestamp,
+            "end": end_timestamp,
             "days_old": days_old,
+            "days_left": days_left,
             "total_votes": len(votes),
             "council_votes": len([w for w in council_wallets if w in voters]),
             "council_non_voters": non_voters,
@@ -445,6 +453,29 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             border-color: #fbbf24;
         }}
         
+        .days-left-badge {{
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 10px;
+        }}
+        
+        .days-left-badge.urgent {{
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border-color: #ef4444;
+        }}
+        
+        .days-left-badge.soon {{
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border-color: #fbbf24;
+        }}
+        
         .proposal-alerts {{
             margin-top: 15px;
         }}
@@ -648,11 +679,30 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             else:
                 vote_class = "few-voted"  # Red - less than 50%
             
+            # Determine days left badge color
+            days_left = proposal.get('days_left', 0)
+            
+            # If all council members have voted, show green (success)
+            if council_votes == COUNCIL_MEMBERS_COUNT:
+                days_left_class = ""  # Green - all voted
+            # Otherwise, color based on urgency
+            elif days_left < 2:
+                days_left_class = "urgent"  # Red - less than 2 days and not all voted
+            elif days_left < 5:
+                days_left_class = "soon"  # Yellow - less than 5 days and not all voted
+            else:
+                days_left_class = ""  # Green - 5+ days
+            
+            days_left_text = f"{days_left} day{'s' if days_left != 1 else ''} left" if days_left >= 0 else "Ended"
+            
             html += f"""
                 <div class="proposal-card">
                     <div class="proposal-header">
                         <div class="proposal-title">{proposal['title']}</div>
-                        <div class="proposal-badge {badge_class}">{proposal['days_old']} days old</div>
+                        <div>
+                            <span class="proposal-badge {badge_class}">{proposal['days_old']} days old</span>
+                            <span class="days-left-badge {days_left_class}">{days_left_text}</span>
+                        </div>
                     </div>
                     <div class="proposal-stats">
                         <div class="stat">

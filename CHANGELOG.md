@@ -5,6 +5,91 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.2] - 2025-10-27
+
+### Added
+
+#### UI/UX Improvements
+- **Days Left Counter**
+  - Added "days left" badge for each proposal showing time remaining until voting ends
+  - Smart color-coding based on voting completion and time:
+    - 🟢 Green: All council members voted (regardless of time) OR 5+ days remaining
+    - 🟡 Yellow: Less than 5 days remaining AND votes not complete
+    - 🔴 Red: Less than 2 days remaining AND votes not complete
+  - Displays "Ended" status for closed proposals
+  
+- **Color-Coded Voting Statistics**
+  - Council votes now display with color indicators:
+    - 🟢 Green: All council members have voted (6/6)
+    - 🟡 Yellow: 50%+ have voted but not all (3-5/6)
+    - 🔴 Red: Less than 50% have voted (0-2/6)
+  - Visual priority system for quick identification of voting status
+
+- **Improved Header Design**
+  - Changed emoji to 🗳️ (ballot box) for better voting representation
+  - Made subtitle clickable with link to Snapshot space
+  - Added smooth hover effects on header links
+
+- **Enhanced Footer**
+  - Redesigned footer with two-column layout matching sample.py
+  - Left: Clickable link "Monitoring Snapshot votes for The Graph Council"
+  - Right: Version info and GitHub repository link with icon
+  - Responsive mobile layout (stacks vertically on small screens)
+
+#### Configuration
+- **Parametric Council Count**
+  - Added `COUNCIL_MEMBERS_COUNT` parameter to `.env` file
+  - Dynamic council member count throughout application
+  - Default value: 6 members
+  - Used for voting percentage calculations and display
+
+#### Technical
+- **Proposal End Time Tracking**
+  - Now fetches and tracks proposal end timestamps
+  - Calculates remaining time for active proposals
+  - Enables time-based urgency indicators
+
+### Changed
+- **Alert Display Logic**
+  - Removed separate alerts section
+  - Alerts now displayed inline within proposal cards
+  - Contextual alert presentation for better UX
+  - Proposals show alerts only when threshold is exceeded
+
+- **Summary Card Order**
+  - Reordered summary cards by priority:
+    1. Active Alerts (Red) - Most important
+    2. Active Proposals (Yellow) - Needs monitoring
+    3. Council Members (Green) - Status info
+
+- **Version Format**
+  - Changed VERSION format from "v0.0.1" to "0.0.1" (removed 'v' prefix)
+  - Consistent version display across UI
+
+### Improved
+- **Dark Theme Consistency**
+  - Applied sample.py color palette throughout
+  - Background: `#0C0A1D` (dark navy)
+  - Text: `#F8F6FF` (light lavender)
+  - Borders: `#9CA3AF` (gray)
+  - Font: Poppins for modern look
+
+- **Interactive Elements**
+  - All links have consistent hover effects
+  - Smooth transitions (0.3s) for better UX
+  - Clear visual feedback on interactive elements
+
+- **Mobile Responsiveness**
+  - Enhanced footer layout for mobile devices
+  - Improved touch target sizes
+  - Better text wrapping and spacing
+
+### Fixed
+- **Footer Layout**
+  - Fixed footer structure to match dashboard styling
+  - Proper spacing and alignment
+  - Consistent color scheme
+
 ## [v0.0.1] - 2025-10-27
 
 ### Initial Release 🎉
@@ -195,9 +280,11 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.2] - 2025-10-27** - UI improvements, color-coding, days left counter
 - **[v0.0.1] - 2025-10-27** - Initial release
 
 ---
 
-[v0.0.1]: https://github.com/yourusername/grump/releases/tag/v0.0.1
+[v0.0.2]: https://github.com/pdiomede/grump/releases/tag/v0.0.2
+[v0.0.1]: https://github.com/pdiomede/grump/releases/tag/v0.0.1
 
