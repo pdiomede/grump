@@ -1,0 +1,753 @@
+#!/usr/bin/env python3
+"""
+The Graph Council Voting Monitor
+Monitors Snapshot proposals and tracks council member voting activity
+"""
+
+# Version
+VERSION = "v0.0.1"
+LAST_UPDATE = "2025-10-27"
+
+import os
+import sys
+import json
+import requests
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import List, Dict, Set
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Configuration
+SNAPSHOT_API_URL = "https://hub.snapshot.org/graphql"
+SNAPSHOT_SPACE = os.getenv("SNAPSHOT_SPACE", "council.graphprotocol.eth")
+ALERT_THRESHOLD_DAYS = int(os.getenv("ALERT_THRESHOLD_DAYS", "5"))
+WALLETS_FILE = os.getenv("WALLETS_FILE", "wallets.txt")
+OUTPUT_HTML = os.getenv("OUTPUT_HTML", "index.html")
+COUNCIL_MEMBERS_COUNT = int(os.getenv("COUNCIL_MEMBERS_COUNT", "6"))
+
+
+def load_council_wallets() -> List[str]:
+    """Load council member wallet addresses from file"""
+    wallets = []
+    wallet_path = Path(WALLETS_FILE)
+    
+    if not wallet_path.exists():
+        print(f"Error: Wallets file '{WALLETS_FILE}' not found!")
+        sys.exit(1)
+    
+    with open(wallet_path, 'r') as f:
+        for line in f:
+            line = line.strip()
+            # Skip empty lines and comments
+            if line and not line.startswith('#'):
+                # Normalize to lowercase for comparison
+                wallets.append(line.lower())
+    
+    return wallets
+
+
+def query_snapshot(query: str, variables: dict = None) -> dict:
+    """Execute a GraphQL query against Snapshot API"""
+    try:
+        response = requests.post(
+            SNAPSHOT_API_URL,
+            json={"query": query, "variables": variables or {}},
+            headers={"Content-Type": "application/json"},
+            timeout=30
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        if "errors" in data:
+            print(f"GraphQL errors: {data['errors']}")
+            return None
+            
+        return data.get("data")
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed: {e}")
+        return None
+
+
+def fetch_active_proposals() -> List[Dict]:
+    """Fetch active proposals from the council space"""
+    query = """
+    query Proposals($space: String!) {
+      proposals(
+        first: 50,
+        where: {
+          space: $space,
+          state: "active"
+        },
+        orderBy: "created",
+        orderDirection: desc
+      ) {
+        id
+        title
+        body
+        choices
+        start
+        end
+        state
+        author
+        created
+      }
+    }
+    """
+    
+    variables = {"space": SNAPSHOT_SPACE}
+    result = query_snapshot(query, variables)
+    
+    if result and "proposals" in result:
+        return result["proposals"]
+    return []
+
+
+def fetch_votes_for_proposal(proposal_id: str) -> List[Dict]:
+    """Fetch all votes for a specific proposal"""
+    query = """
+    query Votes($proposal: String!) {
+      votes(
+        first: 1000,
+        where: {
+          proposal: $proposal
+        }
+      ) {
+        id
+        voter
+        choice
+        created
+      }
+    }
+    """
+    
+    variables = {"proposal": proposal_id}
+    result = query_snapshot(query, variables)
+    
+    if result and "votes" in result:
+        return result["votes"]
+    return []
+
+
+def calculate_days_since(timestamp: int) -> int:
+    """Calculate days since a Unix timestamp"""
+    created_date = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    now = datetime.now(timezone.utc)
+    delta = now - created_date
+    return delta.days
+
+
+def analyze_voting_status(council_wallets: List[str]) -> Dict:
+    """Analyze voting status for all active proposals"""
+    proposals = fetch_active_proposals()
+    
+    if not proposals:
+        return {
+            "proposals": [],
+            "alerts": [],
+            "summary": {
+                "total_proposals": 0,
+                "total_alerts": 0
+            }
+        }
+    
+    results = []
+    all_alerts = []
+    
+    for proposal in proposals:
+        proposal_id = proposal["id"]
+        proposal_title = proposal["title"]
+        created_timestamp = proposal["created"]
+        days_old = calculate_days_since(created_timestamp)
+        
+        # Fetch votes for this proposal
+        votes = fetch_votes_for_proposal(proposal_id)
+        voters = {vote["voter"].lower() for vote in votes}
+        
+        # Find who hasn't voted
+        non_voters = []
+        for wallet in council_wallets:
+            if wallet not in voters:
+                non_voters.append(wallet)
+        
+        # Generate alerts if threshold exceeded
+        alerts_for_proposal = []
+        if days_old >= ALERT_THRESHOLD_DAYS and non_voters:
+            for wallet in non_voters:
+                alert = {
+                    "wallet": wallet,
+                    "proposal_id": proposal_id,
+                    "proposal_title": proposal_title,
+                    "days_old": days_old
+                }
+                alerts_for_proposal.append(alert)
+                all_alerts.append(alert)
+        
+        results.append({
+            "id": proposal_id,
+            "title": proposal_title,
+            "created": created_timestamp,
+            "days_old": days_old,
+            "total_votes": len(votes),
+            "council_votes": len([w for w in council_wallets if w in voters]),
+            "council_non_voters": non_voters,
+            "alerts": alerts_for_proposal
+        })
+    
+    return {
+        "proposals": results,
+        "alerts": all_alerts,
+        "summary": {
+            "total_proposals": len(proposals),
+            "total_alerts": len(all_alerts)
+        }
+    }
+
+
+def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
+    """Generate HTML report with voting status"""
+    timestamp = datetime.now(timezone.utc).strftime("%d %b %Y at %H:%M (UTC)")
+    
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Graph Council Voting Monitor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0C0A1D;
+            min-height: 100vh;
+            padding: 20px;
+            color: #F8F6FF;
+        }}
+        
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #0C0A1D;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid #9CA3AF;
+        }}
+        
+        .header {{
+            background: #0C0A1D;
+            color: #F8F6FF;
+            padding: 30px;
+            border-bottom: 1px solid #9CA3AF;
+            text-align: center;
+        }}
+        
+        .header h1 {{
+            font-size: 2.2em;
+            margin-bottom: 0.5rem;
+            font-weight: 300;
+        }}
+        
+        .header p {{
+            opacity: 0.9;
+            font-size: 0.95rem;
+            font-weight: 300;
+        }}
+        
+        .content {{
+            padding: 30px;
+            background: #0C0A1D;
+        }}
+        
+        .summary {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 25px 0;
+            border-bottom: 1px solid #9CA3AF;
+        }}
+        
+        .summary-card {{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }}
+        
+        .summary-card h3 {{
+            color: #9CA3AF;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }}
+        
+        .summary-card .value {{
+            color: #F8F6FF;
+            font-size: 32px;
+            font-weight: 600;
+            text-align: center;
+        }}
+        
+        .summary-card.alert-count .value {{
+            color: #ef4444;
+        }}
+        
+        .summary-card.proposal-count .value {{
+            color: #fbbf24;
+        }}
+        
+        .summary-card.member-count .value {{
+            color: #22c55e;
+        }}
+        
+        .alert-section {{
+            margin-bottom: 30px;
+        }}
+        
+        .section-title {{
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #F8F6FF;
+            font-weight: 500;
+        }}
+        
+        .alert-box {{
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid #ef4444;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #ef4444;
+        }}
+        
+        .alert-box.warning {{
+            background: rgba(239, 68, 68, 0.15);
+            border-left-color: #ef4444;
+        }}
+        
+        .alert-title {{
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ef4444;
+            font-size: 1.1rem;
+        }}
+        
+        .alert-details {{
+            color: #9CA3AF;
+            margin-top: 8px;
+            font-size: 14px;
+        }}
+        
+        .wallet-address {{
+            font-family: 'Courier New', monospace;
+            background: rgba(156, 163, 175, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 13px;
+            border: 1px solid #9CA3AF;
+            color: #F8F6FF;
+        }}
+        
+        .copy-btn {{
+            background: rgba(156, 163, 175, 0.2);
+            color: #9CA3AF;
+            border: 1px solid #9CA3AF;
+            padding: 4px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }}
+        
+        .copy-btn:hover {{
+            background: rgba(156, 163, 175, 0.3);
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }}
+        
+        .copy-btn:active {{
+            transform: scale(0.95);
+        }}
+        
+        .copy-btn.copied {{
+            background: #22c55e;
+            color: #0C0A1D;
+            border-color: #22c55e;
+        }}
+        
+        .proposal-card {{
+            background: rgba(156, 163, 175, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #9CA3AF;
+            transition: all 0.2s ease;
+        }}
+        
+        .proposal-card:hover {{
+            background: #1a1825;
+            transform: translateY(-2px);
+        }}
+        
+        .proposal-header {{
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }}
+        
+        .proposal-title {{
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #F8F6FF;
+            flex: 1;
+        }}
+        
+        .proposal-badge {{
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+            border: 1px solid #22c55e;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: 15px;
+        }}
+        
+        .proposal-badge.old {{
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border-color: #fbbf24;
+        }}
+        
+        .proposal-alerts {{
+            margin-top: 15px;
+        }}
+        
+        .proposal-alerts .alert-box {{
+            margin-bottom: 0;
+        }}
+        
+        .proposal-stats {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }}
+        
+        .stat {{
+            font-size: 14px;
+            color: #9CA3AF;
+        }}
+        
+        .stat strong {{
+            color: #F8F6FF;
+        }}
+        
+        .stat .vote-count {{
+            font-weight: 600;
+        }}
+        
+        .stat .vote-count.all-voted {{
+            color: #22c55e;
+        }}
+        
+        .stat .vote-count.most-voted {{
+            color: #fbbf24;
+        }}
+        
+        .stat .vote-count.few-voted {{
+            color: #ef4444;
+        }}
+        
+        .non-voters {{
+            background: rgba(156, 163, 175, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #9CA3AF;
+        }}
+        
+        .non-voters-title {{
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #ef4444;
+            font-size: 14px;
+        }}
+        
+        .no-alerts {{
+            text-align: center;
+            padding: 50px;
+            color: #22c55e;
+            font-size: 1.2rem;
+        }}
+        
+        .no-alerts::before {{
+            content: "✓";
+            display: block;
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }}
+        
+        .footer {{
+            text-align: center;
+            padding: 20px 30px;
+            background: #0C0A1D;
+            color: #9CA3AF;
+            font-size: 14px;
+            border-top: 1px solid #9CA3AF;
+        }}
+        
+        .footer p {{
+            margin: 5px 0;
+        }}
+        
+        .snapshot-link {{
+            color: #9CA3AF;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }}
+        
+        .snapshot-link:hover {{
+            color: #F8F6FF;
+            text-decoration: underline;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗳️ The Graph Council Voting Monitor</h1>
+            <p>Tracking voting activity for {SNAPSHOT_SPACE}</p>
+            <p>Last updated: {timestamp}</p>
+        </div>
+        
+        <div class="content">
+            <div class="summary">
+                <div class="summary-card alert-count">
+                    <h3>Active Alerts</h3>
+                    <div class="value">{data['summary']['total_alerts']}</div>
+                </div>
+                <div class="summary-card proposal-count">
+                    <h3>Active Proposals</h3>
+                    <div class="value">{data['summary']['total_proposals']}</div>
+                </div>
+                <div class="summary-card member-count">
+                    <h3>Council Members</h3>
+                    <div class="value">{COUNCIL_MEMBERS_COUNT}</div>
+                </div>
+            </div>
+"""
+    
+    # Proposals section (with alerts inline)
+    if data['proposals']:
+        html += """
+            <div class="proposals-section">
+                <h2 class="section-title">📋 Active Proposals</h2>
+"""
+        
+        for proposal in data['proposals']:
+            badge_class = "old" if proposal['days_old'] >= ALERT_THRESHOLD_DAYS else ""
+            has_alerts = len(proposal.get('alerts', [])) > 0
+            
+            # Calculate voting percentage and determine color class
+            council_votes = proposal['council_votes']
+            vote_percentage = (council_votes / COUNCIL_MEMBERS_COUNT * 100) if COUNCIL_MEMBERS_COUNT > 0 else 0
+            
+            if council_votes == COUNCIL_MEMBERS_COUNT:
+                vote_class = "all-voted"  # Green - all votes in
+            elif vote_percentage >= 50:
+                vote_class = "most-voted"  # Yellow - 50% or more but not all
+            else:
+                vote_class = "few-voted"  # Red - less than 50%
+            
+            html += f"""
+                <div class="proposal-card">
+                    <div class="proposal-header">
+                        <div class="proposal-title">{proposal['title']}</div>
+                        <div class="proposal-badge {badge_class}">{proposal['days_old']} days old</div>
+                    </div>
+                    <div class="proposal-stats">
+                        <div class="stat">
+                            <strong>Total Votes:</strong> {proposal['total_votes']}
+                        </div>
+                        <div class="stat">
+                            <strong>Council Votes:</strong> <span class="vote-count {vote_class}">{council_votes}/{COUNCIL_MEMBERS_COUNT}</span>
+                        </div>
+                    </div>
+"""
+            
+            # Show alerts for this proposal if any
+            if has_alerts and proposal['days_old'] >= ALERT_THRESHOLD_DAYS:
+                html += f"""
+                    <div class="proposal-alerts">
+                        <div class="alert-box warning">
+                            <div class="alert-title">
+                                ⚠️ {len(proposal['alerts'])} Council Member(s) Haven't Voted (Proposal is {proposal['days_old']} days old)
+                            </div>
+"""
+                
+                for wallet in proposal['council_non_voters']:
+                    html += f"""
+                            <div class="alert-details">
+                                <div class="wallet-address">
+                                    <span class="wallet-text">{wallet}</span>
+                                    <button class="copy-btn" onclick="copyToClipboard('{wallet}', this)">
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+"""
+                
+                html += """
+                        </div>
+                    </div>
+"""
+            elif proposal['council_non_voters']:
+                # Show non-voters but without alert styling (under threshold)
+                html += f"""
+                    <div class="non-voters">
+                        <div class="non-voters-title">
+                            Council Members Who Haven't Voted Yet ({len(proposal['council_non_voters'])}):
+                        </div>
+"""
+                
+                for wallet in proposal['council_non_voters']:
+                    html += f"""
+                        <div class="wallet-address">
+                            <span class="wallet-text">{wallet}</span>
+                            <button class="copy-btn" onclick="copyToClipboard('{wallet}', this)">
+                                Copy
+                            </button>
+                        </div>
+"""
+                
+                html += """
+                    </div>
+"""
+            
+            html += f"""
+                    <div style="margin-top: 1rem;">
+                        <a href="https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal['id']}" 
+                           class="snapshot-link" target="_blank">
+                            View on Snapshot →
+                        </a>
+                    </div>
+                </div>
+"""
+        
+        html += """
+            </div>
+"""
+    else:
+        html += """
+            <div class="no-alerts">
+                No active proposals found.
+            </div>
+"""
+    
+    # Show success message if no alerts at all
+    if data['summary']['total_alerts'] == 0 and data['summary']['total_proposals'] > 0:
+        html += """
+            <div class="no-alerts">
+                ✅ All council members have voted on active proposals!
+            </div>
+"""
+    
+    html += f"""
+        </div>
+        
+        <div class="footer">
+            <p>Monitoring <strong>{SNAPSHOT_SPACE}</strong></p>
+            <p>Alert threshold: <strong>{ALERT_THRESHOLD_DAYS} days</strong></p>
+            <p>Version: <strong>{VERSION}</strong> | Last Update: <strong>{LAST_UPDATE}</strong></p>
+        </div>
+    </div>
+    
+    <script>
+        function copyToClipboard(text, button) {{
+            navigator.clipboard.writeText(text).then(function() {{
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(function() {{
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }}, 2000);
+            }}, function(err) {{
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy to clipboard');
+            }});
+        }}
+    </script>
+</body>
+</html>
+"""
+    
+    return html
+
+
+def main():
+    """Main execution function"""
+    current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    
+    print("=" * 60)
+    print("The Graph Council Voting Monitor")
+    print(f"Version: {VERSION}")
+    print(f"Last Update: {LAST_UPDATE}")
+    print(f"Current Run: {current_time}")
+    print("=" * 60)
+    print(f"Space: {SNAPSHOT_SPACE}")
+    print(f"Alert threshold: {ALERT_THRESHOLD_DAYS} days")
+    print(f"Output: {OUTPUT_HTML}")
+    print("=" * 60)
+    
+    # Load council member wallets
+    print("\nLoading council member wallets...")
+    council_wallets = load_council_wallets()
+    print(f"Loaded {len(council_wallets)} council member addresses")
+    
+    # Fetch and analyze data
+    print("\nFetching active proposals from Snapshot...")
+    data = analyze_voting_status(council_wallets)
+    
+    print(f"\nFound {data['summary']['total_proposals']} active proposal(s)")
+    print(f"Generated {data['summary']['total_alerts']} alert(s)")
+    
+    # Generate HTML report
+    print(f"\nGenerating HTML report: {OUTPUT_HTML}")
+    html_content = generate_html_report(data, council_wallets)
+    
+    with open(OUTPUT_HTML, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    
+    print(f"✓ Report generated successfully!")
+    print(f"✓ Open {OUTPUT_HTML} in your browser to view the report")
+    
+    # Print summary to console
+    if data['alerts']:
+        print("\n⚠️  ALERTS:")
+        for alert in data['alerts']:
+            print(f"  • {alert['wallet'][:10]}... hasn't voted on '{alert['proposal_title']}' ({alert['days_old']} days)")
+    else:
+        print("\n✓ No alerts - all council members are up to date!")
+
+
+if __name__ == "__main__":
+    main()
+
