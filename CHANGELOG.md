@@ -5,6 +5,18 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+#### Configuration
+- **Hide Completed Proposals**
+  - Added `SHOW_COMPLETED_PROPOSALS` parameter to `.env` file (default: N)
+  - When set to "N", proposals with all council members voted (6/6) are hidden from the dashboard
+  - When set to "Y", all proposals are displayed regardless of voting completion
+  - Helps focus attention on proposals that still need votes
+  - Active Proposals counter updates dynamically based on displayed proposals
+
 ## [v0.0.2] - 2025-10-27
 
 ### Added
@@ -85,6 +97,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Better text wrapping and spacing
 
 ### Fixed
+- **Days Left Badge Logic**
+  - Fixed badge to show green ONLY when all council members have voted
+  - Yellow is now the default state for incomplete voting (regardless of time remaining)
+  - Red only appears when less than 2 days remain AND voting is incomplete
+  - Ensures clear visual indication of voting completion status
+
 - **Footer Layout**
   - Fixed footer structure to match dashboard styling
   - Proper spacing and alignment

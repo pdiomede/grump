@@ -27,6 +27,7 @@ ALERT_THRESHOLD_DAYS = int(os.getenv("ALERT_THRESHOLD_DAYS", "5"))
 WALLETS_FILE = os.getenv("WALLETS_FILE", "wallets.txt")
 OUTPUT_HTML = os.getenv("OUTPUT_HTML", "index.html")
 COUNCIL_MEMBERS_COUNT = int(os.getenv("COUNCIL_MEMBERS_COUNT", "6"))
+SHOW_COMPLETED_PROPOSALS = os.getenv("SHOW_COMPLETED_PROPOSALS", "N").upper() == "Y"
 
 
 def load_council_wallets() -> List[str]:
@@ -641,6 +642,18 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         </div>
         
         <div class="content">
+"""
+    
+    # Filter proposals based on SHOW_COMPLETED_PROPOSALS setting
+    proposals_to_display = data['proposals']
+    if not SHOW_COMPLETED_PROPOSALS:
+        # Hide proposals where all council members have voted
+        proposals_to_display = [
+            p for p in data['proposals'] 
+            if p['council_votes'] < COUNCIL_MEMBERS_COUNT
+        ]
+    
+    html += f"""
             <div class="summary">
                 <div class="summary-card alert-count">
                     <h3>Active Alerts</h3>
@@ -648,7 +661,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
                 </div>
                 <div class="summary-card proposal-count">
                     <h3>Active Proposals</h3>
-                    <div class="value">{data['summary']['total_proposals']}</div>
+                    <div class="value">{len(proposals_to_display)}</div>
                 </div>
                 <div class="summary-card member-count">
                     <h3>Council Members</h3>
@@ -658,13 +671,14 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
 """
     
     # Proposals section (with alerts inline)
-    if data['proposals']:
+    if proposals_to_display:
+        
         html += """
             <div class="proposals-section">
                 <h2 class="section-title">Active Proposals</h2>
 """
         
-        for proposal in data['proposals']:
+        for proposal in proposals_to_display:
             badge_class = "old" if proposal['days_old'] >= ALERT_THRESHOLD_DAYS else ""
             has_alerts = len(proposal.get('alerts', [])) > 0
             
@@ -783,7 +797,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
 """
     
     # Show success message if no alerts at all
-    if data['summary']['total_alerts'] == 0 and data['summary']['total_proposals'] > 0:
+    if data['summary']['total_alerts'] == 0 and len(proposals_to_display) > 0:
         html += """
             <div class="no-alerts">
                 ✅ All council members have voted on active proposals!
@@ -845,6 +859,7 @@ def main():
     print("=" * 60)
     print(f"Space: {SNAPSHOT_SPACE}")
     print(f"Alert threshold: {ALERT_THRESHOLD_DAYS} days")
+    print(f"Show completed proposals: {'Yes' if SHOW_COMPLETED_PROPOSALS else 'No'}")
     print(f"Output: {OUTPUT_HTML}")
     print("=" * 60)
     

@@ -128,6 +128,8 @@ if days_old >= ALERT_THRESHOLD_DAYS and non_voters:
 - ✅ Fetches active proposals from Snapshot GraphQL API
 - ✅ Tracks voting status for specific council members
 - ✅ Configurable alert threshold (default: 5 days)
+- ✅ Optional hiding of completed proposals (with all votes)
+- ✅ Color-coded voting status and time remaining indicators
 - ✅ Generates a modern, responsive HTML report
 - ✅ One-click copy of Ethereum addresses
 - ✅ Direct links to proposals on Snapshot
@@ -170,6 +172,12 @@ WALLETS_FILE=wallets.txt
 
 # Output HTML file path
 OUTPUT_HTML=index.html
+
+# Expected number of council members
+COUNCIL_MEMBERS_COUNT=6
+
+# Show proposals with all council members voted (Y/N)
+SHOW_COMPLETED_PROPOSALS=N
 ```
 
 4. **Add council member wallet addresses:**
