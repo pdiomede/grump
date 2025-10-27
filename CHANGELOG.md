@@ -12,10 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### UI/UX Improvements
 - **Days Left Counter**
   - Added "days left" badge for each proposal showing time remaining until voting ends
-  - Smart color-coding based on voting completion and time:
-    - 🟢 Green: All council members voted (regardless of time) OR 5+ days remaining
-    - 🟡 Yellow: Less than 5 days remaining AND votes not complete
-    - 🔴 Red: Less than 2 days remaining AND votes not complete
+  - Smart color-coding based on voting completion:
+    - 🟢 Green: ONLY when all council members have voted (6/6) - Success!
+    - 🟡 Yellow: When votes are incomplete (default state)
+    - 🔴 Red: Less than 2 days remaining AND votes still incomplete - Urgent!
   - Displays "Ended" status for closed proposals
   
 - **Color-Coded Voting Statistics**

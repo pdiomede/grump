@@ -682,16 +682,15 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             # Determine days left badge color
             days_left = proposal.get('days_left', 0)
             
-            # If all council members have voted, show green (success)
+            # Green ONLY when all council members have voted
             if council_votes == COUNCIL_MEMBERS_COUNT:
-                days_left_class = ""  # Green - all voted
-            # Otherwise, color based on urgency
+                days_left_class = ""  # Green - all voted (success)
+            # Red when less than 2 days and not all voted (urgent)
             elif days_left < 2:
-                days_left_class = "urgent"  # Red - less than 2 days and not all voted
-            elif days_left < 5:
-                days_left_class = "soon"  # Yellow - less than 5 days and not all voted
+                days_left_class = "urgent"  # Red - urgent, not all voted
+            # Yellow for all other cases when not all voted
             else:
-                days_left_class = ""  # Green - 5+ days
+                days_left_class = "soon"  # Yellow - not all voted yet
             
             days_left_text = f"{days_left} day{'s' if days_left != 1 else ''} left" if days_left >= 0 else "Ended"
             
