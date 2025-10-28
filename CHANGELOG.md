@@ -5,7 +5,7 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.3.0] - 2025-10-28
+## [v0.0.10] - 2025-10-28
 
 ### Added
 
@@ -876,7 +876,7 @@ Potential features for future versions:
 
 ## Version History
 
-- **[v0.3.0] - 2025-10-28** - Named council members with address,name format
+- **[v0.0.10] - 2025-10-28** - Named council members with address,name format
 - **[v0.2.0] - 2025-10-28** - Add FUN_MODE with casual messaging and Pedro image
 - **[v0.1.1] - 2025-10-28** - Improve dashboard success messages
 - **[v0.1.0] - 2025-10-28** - Add dashboard link to Slack messages
@@ -892,7 +892,7 @@ Potential features for future versions:
 
 ---
 
-[v0.3.0]: https://github.com/pdiomede/grump/releases/tag/v0.3.0
+[v0.0.10]: https://github.com/pdiomede/grump/releases/tag/v0.0.10
 [v0.2.0]: https://github.com/pdiomede/grump/releases/tag/v0.2.0
 [v0.1.1]: https://github.com/pdiomede/grump/releases/tag/v0.1.1
 [v0.1.0]: https://github.com/pdiomede/grump/releases/tag/v0.1.0

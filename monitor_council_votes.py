@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.3.0"
+VERSION = "0.0.10"
 LAST_UPDATE = "2025-10-28"
 
 import os
