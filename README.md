@@ -362,6 +362,7 @@ The generated `index.html` report includes:
 | `OUTPUT_HTML` | `index.html` | Output HTML file path |
 | `COUNCIL_MEMBERS_COUNT` | `6` | Expected number of council members |
 | `SHOW_COMPLETED_PROPOSALS` | `N` | Show proposals with all votes (Y/N) |
+| `FUN_MODE` | `N` | Enable fun mode with emojis and casual messaging (Y/N) |
 
 ### Wallet File Format
 
@@ -462,5 +463,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.1.1)
+**Last Updated:** October 28, 2025 (v0.2.0)
 

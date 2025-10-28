@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.1.1"
+VERSION = "0.2.0"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -33,6 +33,7 @@ SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 SLACK_MENTION_USERS = os.getenv("SLACK_MENTION_USERS", "")
 POST_TO_SLACK = os.getenv("POST_TO_SLACK", "N").upper() == "Y"
 PROPOSAL_MAX_AGE_DAYS = int(os.getenv("PROPOSAL_MAX_AGE_DAYS", "10"))
+FUN_MODE = os.getenv("FUN_MODE", "N").upper() == "Y"
 
 
 def load_council_wallets() -> List[str]:
@@ -814,7 +815,14 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             </div>
 """
     else:
-        html += """
+        if FUN_MODE:
+            html += """
+            <div class="no-alerts">
+                🎉 Woohoo! Nothing to see here. Everyone's chilling! 😎
+            </div>
+"""
+        else:
+            html += """
             <div class="no-alerts">
                 All clear! No recent proposals requiring attention.
             </div>
@@ -822,7 +830,15 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     
     # Show success message if no alerts at all
     if data['summary']['total_alerts'] == 0 and len(proposals_to_display) > 0:
-        html += """
+        if FUN_MODE:
+            html += """
+            <div class="no-alerts" style="padding: 50px;">
+                <img src="./pedro.jpg" alt="Pedro approves!" style="max-width: 300px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 20px;">
+                <div style="font-size: 1.5rem; margin-top: 20px;">🎊 Amazing! The council is on fire! Everyone voted! 🔥</div>
+            </div>
+"""
+        else:
+            html += """
             <div class="no-alerts">
                 ✅ Excellent! All council members are up to date with their votes.
             </div>
@@ -928,8 +944,12 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             days_left_text = f"{days_left} day{'s' if days_left != 1 else ''}" if days_left >= 0 else "0 days (ENDED)"
             
             # Build the message
-            message_text = f"🤖 Reminder: {formatted_title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
-            message_text += f"Missing votes in the last {ALERT_THRESHOLD_DAYS} days:\n"
+            if FUN_MODE:
+                message_text = f"🚨 Hey team! {formatted_title} needs some love! {missing_votes} vote{'s' if missing_votes != 1 else ''} missing and it's ending in {days_left_text}! ⏰\n"
+                message_text += f"Who forgot to vote in the last {ALERT_THRESHOLD_DAYS} days? 👀\n"
+            else:
+                message_text = f"🤖 Reminder: {formatted_title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
+                message_text += f"Missing votes in the last {ALERT_THRESHOLD_DAYS} days:\n"
             
             # Add non-voters (wallet addresses without @ symbol)
             for wallet in proposal['council_non_voters']:
@@ -937,8 +957,12 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             
             # Add link to proposal
             proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"
-            message_text += f"\nPlease cast your vote here asap: {proposal_link}\n"
-            message_text += "Thank you!"
+            if FUN_MODE:
+                message_text += f"\n🎯 Cast your vote NOW and be a hero: {proposal_link}\n"
+                message_text += "Let's gooooo! 🚀"
+            else:
+                message_text += f"\nPlease cast your vote here asap: {proposal_link}\n"
+                message_text += "Thank you!"
             
             # Add dashboard link
             message_text += "\n\nFull Details here:\nhttps://dashboards.thegraph.foundation/grump/"

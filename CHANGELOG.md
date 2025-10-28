@@ -5,6 +5,85 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.2.0] - 2025-10-28
+
+### Added
+
+#### Fun Mode Feature
+- **FUN_MODE Configuration Variable**
+  - New `FUN_MODE` environment variable (Y/N, default: N)
+  - Toggle between professional and fun/casual messaging
+  - Affects both Slack notifications and dashboard
+  - Pedro image display when all votes are complete (FUN_MODE=Y)
+
+- **Fun Mode Dashboard Messages**
+  - No proposals: "🎉 Woohoo! Nothing to see here. Everyone's chilling! 😎"
+  - All voted: Shows pedro.jpg image + "🎊 Amazing! The council is on fire! Everyone voted! 🔥"
+  - Image styled with rounded corners and shadow
+
+- **Fun Mode Slack Messages**
+  - Casual opening: "🚨 Hey team! [Proposal] needs some love!"
+  - Playful question: "Who forgot to vote in the last X days? 👀"
+  - Energetic CTA: "🎯 Cast your vote NOW and be a hero: [link]"
+  - Enthusiastic closing: "Let's gooooo! 🚀"
+
+### Changed
+
+#### Messaging System
+- **Dual Tone Support**
+  - Professional mode (FUN_MODE=N): Formal, clear, business-appropriate
+  - Fun mode (FUN_MODE=Y): Casual, energetic, emoji-rich
+  - All messages check FUN_MODE flag before rendering
+  - Consistent tone across dashboard and Slack
+
+**Professional Mode (FUN_MODE=N):**
+```
+🤖 Reminder: GGP-0055 - "Proposal Title" has 2 missing votes...
+Missing votes in the last 5 days:
+[addresses]
+
+Please cast your vote here asap: [link]
+Thank you!
+```
+
+**Fun Mode (FUN_MODE=Y):**
+```
+🚨 Hey team! GGP-0055 - "Proposal Title" needs some love! 2 votes missing and it's ending in 3 days! ⏰
+Who forgot to vote in the last 5 days? 👀
+[addresses]
+
+🎯 Cast your vote NOW and be a hero: [link]
+Let's gooooo! 🚀
+```
+
+### Technical Details
+
+**Configuration:**
+```env
+FUN_MODE=N  # Professional mode (default)
+FUN_MODE=Y  # Fun mode with emojis and casual messaging
+```
+
+**Image Display:**
+- Image path: `./pedro.jpg`
+- Max width: 300px
+- Rounded corners (15px)
+- Shadow effect for depth
+- Only shows when all alerts cleared in fun mode
+
+**Implementation:**
+- Added FUN_MODE boolean flag
+- Conditional rendering in HTML generation
+- Conditional text in Slack message builder
+- Inline styling for pedro image
+
+### Benefits
+- **Team Culture**: Match tool personality to team culture
+- **Engagement**: Fun mode can increase engagement
+- **Flexibility**: Easy toggle without code changes
+- **Default Safe**: Professional mode by default
+- **Morale**: Celebratory image when goals met
+
 ## [v0.1.1] - 2025-10-28
 
 ### Changed
@@ -755,6 +834,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.2.0] - 2025-10-28** - Add FUN_MODE with casual messaging and Pedro image
 - **[v0.1.1] - 2025-10-28** - Improve dashboard success messages
 - **[v0.1.0] - 2025-10-28** - Add dashboard link to Slack messages
 - **[v0.0.9] - 2025-10-28** - Add proposal age filtering (PROPOSAL_MAX_AGE_DAYS)
@@ -769,6 +849,7 @@ Potential features for future versions:
 
 ---
 
+[v0.2.0]: https://github.com/pdiomede/grump/releases/tag/v0.2.0
 [v0.1.1]: https://github.com/pdiomede/grump/releases/tag/v0.1.1
 [v0.1.0]: https://github.com/pdiomede/grump/releases/tag/v0.1.0
 [v0.0.9]: https://github.com/pdiomede/grump/releases/tag/v0.0.9
