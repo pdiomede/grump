@@ -5,6 +5,101 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.4] - 2025-10-28
+
+### Added
+
+#### Slack Integration
+- **Slack Webhook Notifications**
+  - Added `SLACK_WEBHOOK_URL` configuration parameter to `.env` file
+  - Automatic Slack notifications sent for proposals with missing votes
+  - Notifications trigger when proposals exceed alert threshold (default: 5 days)
+  - Each proposal with missing votes generates a separate notification message
+  
+- **Notification Message Format**
+  - Shows proposal title (e.g., "GGP-XXX: Proposal Title")
+  - Displays count of missing votes
+  - Shows days remaining until proposal ends
+  - Lists non-voting council member addresses with @ mentions
+  - Includes direct link to vote on Snapshot
+  - Professional reminder format with call-to-action
+  
+- **Smart Notification Logic**
+  - Only sends notifications when there are actual alerts
+  - Skips Slack integration gracefully if webhook URL not configured
+  - Sends one message per proposal with missing votes
+  - Detailed console output showing notification status
+  - Error handling for network issues and failed sends
+  - Success/failure tracking with summary report
+
+#### Documentation
+- **SLACK_SETUP.md**
+  - Comprehensive setup guide for Slack webhook creation
+  - Step-by-step configuration instructions
+  - Message format examples
+  - Troubleshooting section
+  - Instructions for disabling notifications
+  
+- **Updated README.md**
+  - Added Slack integration to features list
+  - Webhook setup instructions with screenshots guide
+  - Configuration table updated with `SLACK_WEBHOOK_URL`
+  - Example console output with Slack notification logs
+  - Security notes about webhook URLs
+
+#### New Function
+- `send_slack_notification(data, council_wallets)` function
+  - Filters proposals with alerts (days_old >= threshold)
+  - Iterates through each proposal needing attention
+  - Formats custom message for each proposal
+  - POSTs to Slack webhook with JSON payload
+  - Returns success/failure status with detailed logging
+
+### Changed
+- **Main Execution Flow**
+  - Added Slack notification call after HTML report generation
+  - Console output now includes Slack notification status
+  - Enhanced progress reporting with emoji indicators (📤, ✓, ✗, 📊)
+
+- **Version Bump**
+  - Updated VERSION to 0.0.4
+  - Updated LAST_UPDATE to 2025-10-28
+  - Reflects Slack integration addition
+
+### Technical Details
+
+**Configuration**
+```env
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+```
+
+**Message Example**
+```
+🤖 Reminder: GGP-XXX has 2 missing votes, and is ending in 3 days.
+Missing votes in the last 5 days:
+@0x1234567890123456789012345678901234567890
+@0x2345678901234567890123456789012345678901
+
+Please cast your vote here asap: [link]
+Thank you!
+```
+
+**Console Output**
+```
+📤 Sending Slack notifications for 2 proposal(s)...
+  ✓ Sent notification for: GGP-001: Treasury Allocation
+  ✓ Sent notification for: GGP-002: Protocol Update
+📊 Slack notifications: 2/2 sent successfully
+```
+
+### Benefits
+- Proactive team engagement via Slack channel
+- Automated daily reminders for pending votes
+- Reduced manual follow-up effort
+- Improved voting participation
+- Seamless integration with existing workflow
+- Optional feature (can be disabled by not setting webhook)
+
 ## [v0.0.3] - 2025-10-27
 
 ### Added
@@ -304,12 +399,14 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.4] - 2025-10-28** - Slack integration for automated notifications
 - **[v0.0.3] - 2025-10-27** - Hide completed proposals feature
 - **[v0.0.2] - 2025-10-27** - UI improvements, color-coding, days left counter
 - **[v0.0.1] - 2025-10-27** - Initial release
 
 ---
 
+[v0.0.4]: https://github.com/pdiomede/grump/releases/tag/v0.0.4
 [v0.0.3]: https://github.com/pdiomede/grump/releases/tag/v0.0.3
 [v0.0.2]: https://github.com/pdiomede/grump/releases/tag/v0.0.2
 [v0.0.1]: https://github.com/pdiomede/grump/releases/tag/v0.0.1

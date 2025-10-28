@@ -5,8 +5,8 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.3"
-LAST_UPDATE = "2025-10-27"
+VERSION = "0.0.4"
+LAST_UPDATE = "2025-10-28"
 
 import os
 import sys
@@ -28,6 +28,7 @@ WALLETS_FILE = os.getenv("WALLETS_FILE", "wallets.txt")
 OUTPUT_HTML = os.getenv("OUTPUT_HTML", "index.html")
 COUNCIL_MEMBERS_COUNT = int(os.getenv("COUNCIL_MEMBERS_COUNT", "6"))
 SHOW_COMPLETED_PROPOSALS = os.getenv("SHOW_COMPLETED_PROPOSALS", "N").upper() == "Y"
+SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 
 
 def load_council_wallets() -> List[str]:
@@ -847,6 +848,80 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     return html
 
 
+def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
+    """Send Slack notifications for proposals with alerts"""
+    if not SLACK_WEBHOOK_URL:
+        print("\n⚠️  Slack webhook URL not configured - skipping Slack notification")
+        return False
+    
+    # Filter proposals that have alerts (days_old >= threshold and has non-voters)
+    proposals_with_alerts = [
+        p for p in data['proposals'] 
+        if p['days_old'] >= ALERT_THRESHOLD_DAYS and p['council_non_voters']
+    ]
+    
+    if not proposals_with_alerts:
+        print("\n✓ No alerts to send to Slack")
+        return True
+    
+    print(f"\n📤 Sending Slack notifications for {len(proposals_with_alerts)} proposal(s)...")
+    
+    success_count = 0
+    for proposal in proposals_with_alerts:
+        try:
+            # Extract proposal identifier (try to find GGP-XXX pattern or use title)
+            title = proposal['title']
+            proposal_id = proposal['id']
+            
+            # Calculate missing votes
+            missing_votes = COUNCIL_MEMBERS_COUNT - proposal['council_votes']
+            
+            # Calculate days left (could be negative if ended)
+            days_left = proposal['days_left']
+            days_left_text = f"{days_left} day{'s' if days_left != 1 else ''}" if days_left >= 0 else "0 days (ENDED)"
+            
+            # Build the message
+            message_text = f"🤖 Reminder: {title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
+            message_text += f"Missing votes in the last {ALERT_THRESHOLD_DAYS} days:\n"
+            
+            # Add non-voters (using @ mention format)
+            for wallet in proposal['council_non_voters']:
+                message_text += f"@{wallet}\n"
+            
+            # Add link to proposal
+            proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"
+            message_text += f"\nPlease cast your vote here asap: {proposal_link}\n"
+            message_text += "Thank you!"
+            
+            # Send to Slack
+            payload = {
+                "text": message_text,
+                "unfurl_links": False,
+                "unfurl_media": False
+            }
+            
+            response = requests.post(
+                SLACK_WEBHOOK_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                print(f"  ✓ Sent notification for: {title}")
+                success_count += 1
+            else:
+                print(f"  ✗ Failed to send notification for: {title} (Status: {response.status_code})")
+                
+        except requests.exceptions.RequestException as e:
+            print(f"  ✗ Error sending Slack notification for {proposal.get('title', 'Unknown')}: {e}")
+        except Exception as e:
+            print(f"  ✗ Unexpected error for {proposal.get('title', 'Unknown')}: {e}")
+    
+    print(f"\n📊 Slack notifications: {success_count}/{len(proposals_with_alerts)} sent successfully")
+    return success_count == len(proposals_with_alerts)
+
+
 def main():
     """Main execution function"""
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -884,6 +959,9 @@ def main():
     
     print(f"✓ Report generated successfully!")
     print(f"✓ Open {OUTPUT_HTML} in your browser to view the report")
+    
+    # Send Slack notifications
+    send_slack_notification(data, council_wallets)
     
     # Print summary to console
     if data['alerts']:

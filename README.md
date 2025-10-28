@@ -133,6 +133,7 @@ if days_old >= ALERT_THRESHOLD_DAYS and non_voters:
 - ✅ Generates a modern, responsive HTML report
 - ✅ One-click copy of Ethereum addresses
 - ✅ Direct links to proposals on Snapshot
+- ✅ **Slack integration** - sends notifications for proposals with missing votes
 - ✅ Suitable for scheduled execution (cron job)
 
 ## 🚀 Quick Start
@@ -161,6 +162,9 @@ cp .env.example .env
 
 Edit `.env` if you want to change any defaults:
 ```env
+# Slack Configuration (optional - leave empty to disable)
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+
 # Snapshot space to monitor
 SNAPSHOT_SPACE=council.graphprotocol.eth
 
@@ -190,6 +194,40 @@ Edit `wallets.txt` and add the Ethereum wallet addresses of council members (one
 ```
 
 **Note:** Lines starting with `#` are treated as comments and will be ignored.
+
+5. **Configure Slack notifications (Optional):**
+
+To receive Slack notifications when proposals have missing votes:
+
+a. Create a Slack incoming webhook:
+   - Go to https://api.slack.com/messaging/webhooks
+   - Click "Create your Slack app" 
+   - Choose "From scratch" and select your workspace
+   - Navigate to "Incoming Webhooks" and activate it
+   - Click "Add New Webhook to Workspace"
+   - Select the channel where you want notifications
+   - Copy the Webhook URL
+
+b. Add the webhook URL to your `.env` file:
+```env
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR_WORKSPACE_ID/YOUR_CHANNEL_ID/YOUR_SECRET_TOKEN
+```
+
+**Slack Message Format:**
+
+When a proposal has missing votes after the alert threshold, you'll receive a message like:
+
+```
+🤖 Reminder: GGP-XXX has 2 missing votes, and is ending in 3 days.
+Missing votes in the last 5 days:
+@0x1234567890123456789012345678901234567890
+@0x2345678901234567890123456789012345678901
+
+Please cast your vote here asap: https://snapshot.org/#/council.graphprotocol.eth/proposal/0xabc...
+Thank you!
+```
+
+**Note:** If `SLACK_WEBHOOK_URL` is not set or empty, Slack notifications will be skipped.
 
 ### Usage
 
@@ -286,10 +324,13 @@ The generated `index.html` report includes:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `SLACK_WEBHOOK_URL` | _(empty)_ | Slack webhook URL for notifications (optional) |
 | `SNAPSHOT_SPACE` | `council.graphprotocol.eth` | The Snapshot space to monitor |
 | `ALERT_THRESHOLD_DAYS` | `5` | Number of days before alerting for non-voters |
 | `WALLETS_FILE` | `wallets.txt` | Path to file containing council member addresses |
 | `OUTPUT_HTML` | `index.html` | Output HTML file path |
+| `COUNCIL_MEMBERS_COUNT` | `6` | Expected number of council members |
+| `SHOW_COMPLETED_PROPOSALS` | `N` | Show proposals with all votes (Y/N) |
 
 ### Wallet File Format
 
@@ -355,6 +396,12 @@ Generating HTML report: index.html
 ✓ Report generated successfully!
 ✓ Open index.html in your browser to view the report
 
+📤 Sending Slack notifications for 2 proposal(s)...
+  ✓ Sent notification for: GGP-001: Treasury Allocation
+  ✓ Sent notification for: GGP-002: Protocol Update
+
+📊 Slack notifications: 2/2 sent successfully
+
 ⚠️  ALERTS:
   • 0x12345678... hasn't voted on 'GGP-001: Treasury Allocation' (7 days)
   • 0x23456789... hasn't voted on 'GGP-001: Treasury Allocation' (7 days)
@@ -384,5 +431,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 2025
+**Last Updated:** October 28, 2025 (v0.0.4)
 
