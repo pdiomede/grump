@@ -462,5 +462,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.1.0)
+**Last Updated:** October 28, 2025 (v0.1.1)
 

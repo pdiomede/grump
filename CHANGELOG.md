@@ -5,6 +5,31 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.1.1] - 2025-10-28
+
+### Changed
+
+#### Dashboard Messages
+- **Improved Success Messages**
+  - "No active proposals found." → "All clear! No recent proposals requiring attention."
+  - "✅ All council members have voted on active proposals!" → "✅ Excellent! All council members are up to date with their votes."
+  - More positive and encouraging tone
+  - Clearer communication of status
+
+**Before:**
+- "No active proposals found."
+- "All council members have voted on active proposals!"
+
+**After:**
+- "All clear! No recent proposals requiring attention."
+- "Excellent! All council members are up to date with their votes."
+
+### Benefits
+- More positive user experience
+- Clearer status communication
+- Professional and encouraging messaging
+- Better reflects the purpose of filtering recent proposals
+
 ## [v0.1.0] - 2025-10-28
 
 ### Added
@@ -730,6 +755,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.1.1] - 2025-10-28** - Improve dashboard success messages
 - **[v0.1.0] - 2025-10-28** - Add dashboard link to Slack messages
 - **[v0.0.9] - 2025-10-28** - Add proposal age filtering (PROPOSAL_MAX_AGE_DAYS)
 - **[v0.0.8] - 2025-10-28** - Add POST_TO_SLACK toggle for file/Slack output
@@ -743,6 +769,7 @@ Potential features for future versions:
 
 ---
 
+[v0.1.1]: https://github.com/pdiomede/grump/releases/tag/v0.1.1
 [v0.1.0]: https://github.com/pdiomede/grump/releases/tag/v0.1.0
 [v0.0.9]: https://github.com/pdiomede/grump/releases/tag/v0.0.9
 [v0.0.8]: https://github.com/pdiomede/grump/releases/tag/v0.0.8

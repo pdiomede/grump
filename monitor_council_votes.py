@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -816,7 +816,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     else:
         html += """
             <div class="no-alerts">
-                No active proposals found.
+                All clear! No recent proposals requiring attention.
             </div>
 """
     
@@ -824,7 +824,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     if data['summary']['total_alerts'] == 0 and len(proposals_to_display) > 0:
         html += """
             <div class="no-alerts">
-                ✅ All council members have voted on active proposals!
+                ✅ Excellent! All council members are up to date with their votes.
             </div>
 """
     
