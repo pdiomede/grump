@@ -818,8 +818,8 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         if FUN_MODE:
             html += """
             <div class="no-alerts" style="padding: 50px;">
-                <img src="./pedro.jpg" alt="Pedro approves!" style="max-width: 300px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 20px;">
-                <div style="font-size: 1.5rem; margin-top: 20px;">Woohoo! Nothing to see here.</div>
+                <div style="font-size: 1.5rem; margin-bottom: 20px;">Woohoo! Nothing to see here.</div>
+                <img src="./pedro.jpg" alt="Pedro approves!" style="max-width: 300px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
             </div>
 """
         else:
