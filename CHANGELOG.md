@@ -5,6 +5,93 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.8] - 2025-10-28
+
+### Added
+
+#### Testing and Development Features
+- **POST_TO_SLACK Configuration Variable**
+  - New `POST_TO_SLACK` environment variable (Y/N)
+  - Allows toggling between Slack and local file output
+  - Default: N (save to file for testing)
+  - Enables testing notifications before sending to Slack
+
+- **Local File Output Mode**
+  - When `POST_TO_SLACK=N`, messages are saved to `slack_message.txt`
+  - Messages are **appended** (not overwritten)
+  - Each message includes timestamp separator
+  - Perfect for reviewing notifications before going live
+  - Useful for debugging and testing message formatting
+
+- **Timestamp Headers**
+  - Each saved message includes UTC timestamp
+  - Clear separators (80 equals signs) between messages
+  - Easy to track when notifications were generated
+
+#### .gitignore Updates
+- Added `slack_message.txt` to `.gitignore`
+- Prevents accidental commit of test messages
+- Keeps repository clean
+
+### Changed
+
+#### Notification Logic
+- **Dual Output Mode**
+  - Function now supports both Slack posting and file saving
+  - Automatic route selection based on `POST_TO_SLACK` setting
+  - Different console messages for each mode
+  - Independent error handling for file I/O vs. HTTP requests
+
+- **Console Output**
+  - When `POST_TO_SLACK=N`: "💾 Saving Slack notifications to slack_message.txt..."
+  - When `POST_TO_SLACK=Y`: "📤 Sending Slack notifications..."
+  - Summary adapts: "File notifications: X/Y saved successfully" vs. "Slack notifications: X/Y sent successfully"
+
+### Technical Details
+
+**Configuration:**
+```env
+POST_TO_SLACK=N  # Save to file for testing
+POST_TO_SLACK=Y  # Send to Slack
+```
+
+**File Output Format:**
+```
+================================================================================
+Timestamp: 2025-10-28 13:15:30 UTC
+================================================================================
+🤖 Reminder: GGP-0055 - "Proposal Title" has 2 missing votes...
+[full message content]
+================================================================================
+```
+
+**Benefits:**
+- Test message formatting before sending to Slack
+- Review notifications without spamming Slack channel
+- Debug message content and formatting
+- Archive of all generated notifications
+- Safe development workflow
+
+**Implementation:**
+- File operations use UTF-8 encoding
+- Append mode ensures no data loss
+- IOError exception handling for file operations
+- Separate error messages for file vs. Slack failures
+- RequestException only caught when `POST_TO_SLACK=Y`
+
+### Workflow
+
+**Development/Testing:**
+1. Set `POST_TO_SLACK=N`
+2. Run script to generate messages
+3. Review `slack_message.txt`
+4. Adjust formatting as needed
+
+**Production:**
+1. Set `POST_TO_SLACK=Y`
+2. Messages go directly to Slack
+3. Team receives notifications
+
 ## [v0.0.7] - 2025-10-28
 
 ### Added
@@ -541,6 +628,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.8] - 2025-10-28** - Add POST_TO_SLACK toggle for file/Slack output
 - **[v0.0.7] - 2025-10-28** - Enhanced proposal title formatting with quotes and dash
 - **[v0.0.6] - 2025-10-28** - Remove @ symbol from wallet addresses in Slack messages
 - **[v0.0.5] - 2025-10-28** - Slack user mentions (cc) support
@@ -551,6 +639,7 @@ Potential features for future versions:
 
 ---
 
+[v0.0.8]: https://github.com/pdiomede/grump/releases/tag/v0.0.8
 [v0.0.7]: https://github.com/pdiomede/grump/releases/tag/v0.0.7
 [v0.0.6]: https://github.com/pdiomede/grump/releases/tag/v0.0.6
 [v0.0.5]: https://github.com/pdiomede/grump/releases/tag/v0.0.5

@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.7"
+VERSION = "0.0.8"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -31,6 +31,7 @@ COUNCIL_MEMBERS_COUNT = int(os.getenv("COUNCIL_MEMBERS_COUNT", "6"))
 SHOW_COMPLETED_PROPOSALS = os.getenv("SHOW_COMPLETED_PROPOSALS", "N").upper() == "Y"
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 SLACK_MENTION_USERS = os.getenv("SLACK_MENTION_USERS", "")
+POST_TO_SLACK = os.getenv("POST_TO_SLACK", "N").upper() == "Y"
 
 
 def load_council_wallets() -> List[str]:
@@ -869,10 +870,6 @@ def format_proposal_title(title: str) -> str:
 
 def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
     """Send Slack notifications for proposals with alerts"""
-    if not SLACK_WEBHOOK_URL:
-        print("\n⚠️  Slack webhook URL not configured - skipping Slack notification")
-        return False
-    
     # Filter proposals that have alerts (days_old >= threshold and has non-voters)
     proposals_with_alerts = [
         p for p in data['proposals'] 
@@ -880,10 +877,20 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
     ]
     
     if not proposals_with_alerts:
-        print("\n✓ No alerts to send to Slack")
+        if POST_TO_SLACK:
+            print("\n✓ No alerts to send to Slack")
+        else:
+            print("\n✓ No alerts to save to file")
         return True
     
-    print(f"\n📤 Sending Slack notifications for {len(proposals_with_alerts)} proposal(s)...")
+    # Check if we should post to Slack or save to file
+    if POST_TO_SLACK:
+        if not SLACK_WEBHOOK_URL:
+            print("\n⚠️  Slack webhook URL not configured - skipping Slack notification")
+            return False
+        print(f"\n📤 Sending Slack notifications for {len(proposals_with_alerts)} proposal(s)...")
+    else:
+        print(f"\n💾 Saving Slack notifications to slack_message.txt for {len(proposals_with_alerts)} proposal(s)...")
     
     success_count = 0
     for proposal in proposals_with_alerts:
@@ -920,32 +927,53 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
                     mentions = ' '.join([f"<@{uid}>" for uid in user_ids])
                     message_text += f"\n\ncc {mentions}"
             
-            # Send to Slack
-            payload = {
-                "text": message_text,
-                "unfurl_links": False,
-                "unfurl_media": False
-            }
-            
-            response = requests.post(
-                SLACK_WEBHOOK_URL,
-                json=payload,
-                headers={"Content-Type": "application/json"},
-                timeout=10
-            )
-            
-            if response.status_code == 200:
-                print(f"  ✓ Sent notification for: {title}")
-                success_count += 1
+            # Send to Slack or save to file
+            if POST_TO_SLACK:
+                # Send to Slack
+                payload = {
+                    "text": message_text,
+                    "unfurl_links": False,
+                    "unfurl_media": False
+                }
+                
+                response = requests.post(
+                    SLACK_WEBHOOK_URL,
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    print(f"  ✓ Sent notification for: {title}")
+                    success_count += 1
+                else:
+                    print(f"  ✗ Failed to send notification for: {title} (Status: {response.status_code})")
             else:
-                print(f"  ✗ Failed to send notification for: {title} (Status: {response.status_code})")
+                # Save to file
+                try:
+                    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+                    with open("slack_message.txt", "a", encoding="utf-8") as f:
+                        f.write(f"\n{'='*80}\n")
+                        f.write(f"Timestamp: {timestamp}\n")
+                        f.write(f"{'='*80}\n")
+                        f.write(message_text)
+                        f.write(f"\n{'='*80}\n\n")
+                    print(f"  ✓ Saved notification for: {title}")
+                    success_count += 1
+                except IOError as e:
+                    print(f"  ✗ Failed to save notification for: {title} (Error: {e})")
                 
         except requests.exceptions.RequestException as e:
-            print(f"  ✗ Error sending Slack notification for {proposal.get('title', 'Unknown')}: {e}")
+            if POST_TO_SLACK:
+                print(f"  ✗ Error sending Slack notification for {proposal.get('title', 'Unknown')}: {e}")
         except Exception as e:
             print(f"  ✗ Unexpected error for {proposal.get('title', 'Unknown')}: {e}")
     
-    print(f"\n📊 Slack notifications: {success_count}/{len(proposals_with_alerts)} sent successfully")
+    if POST_TO_SLACK:
+        print(f"\n📊 Slack notifications: {success_count}/{len(proposals_with_alerts)} sent successfully")
+    else:
+        print(f"\n📊 File notifications: {success_count}/{len(proposals_with_alerts)} saved successfully")
+    
     return success_count == len(proposals_with_alerts)
 
 

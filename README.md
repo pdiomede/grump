@@ -223,6 +223,17 @@ To get Slack User IDs:
 - Click "More" (three dots) > "Copy member ID"
 - See `HOW_TO_GET_SLACK_USER_IDS.md` for detailed instructions
 
+d. **Choose where to send notifications** (Slack or local file):
+```env
+POST_TO_SLACK=N  # N = Save to file, Y = Send to Slack
+```
+
+When `POST_TO_SLACK=N`:
+- Messages are saved to `slack_message.txt` in the project directory
+- Messages are appended (not overwritten) with timestamps
+- Useful for testing before sending to Slack
+- Review messages before setting `POST_TO_SLACK=Y`
+
 **Slack Message Format:**
 
 When a proposal has missing votes after the alert threshold, you'll receive a message like:
@@ -340,6 +351,7 @@ The generated `index.html` report includes:
 |----------|---------|-------------|
 | `SLACK_WEBHOOK_URL` | _(empty)_ | Slack webhook URL for notifications (optional) |
 | `SLACK_MENTION_USERS` | _(empty)_ | Comma-separated Slack User IDs to mention (optional) |
+| `POST_TO_SLACK` | `N` | Post to Slack (Y) or save to file (N) |
 | `SNAPSHOT_SPACE` | `council.graphprotocol.eth` | The Snapshot space to monitor |
 | `ALERT_THRESHOLD_DAYS` | `5` | Number of days before alerting for non-voters |
 | `WALLETS_FILE` | `wallets.txt` | Path to file containing council member addresses |
@@ -446,5 +458,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.0.7)
+**Last Updated:** October 28, 2025 (v0.0.8)
 
