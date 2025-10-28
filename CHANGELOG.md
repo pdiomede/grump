@@ -5,6 +5,48 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.3.0] - 2025-10-28
+
+### Added
+
+#### Named Council Members Feature
+- **Wallet Name Display**
+  - Enhanced `wallets.txt` to support `address,name` format
+  - Dashboard displays council member names instead of addresses
+  - Slack messages show names instead of addresses
+  - Backwards compatible with address-only format
+  - Fallback to address display if name not provided
+
+- **Improved `load_council_wallets()` Function**
+  - Returns tuple: `(list of addresses, dict of address -> name mappings)`
+  - Parses comma-separated address,name format
+  - Maintains lowercase normalization for addresses
+  - Supports both new and legacy formats
+
+### Changed
+
+- **Dashboard Non-Voter Display**
+  - Shows friendly names (e.g., "Chris", "Adam") instead of wallet addresses
+  - Copy button still copies actual wallet address
+  - Applies to both alert and non-alert sections
+
+- **Slack Message Non-Voter Display**
+  - Lists council member names instead of addresses
+  - More readable and user-friendly notifications
+  - Maintains professional and fun mode formatting
+
+- **UI/UX Improvements**
+  - Removed CSS check mark (✓) from `.no-alerts` class
+  - Cleaner success state displays
+  - Better visual hierarchy with Pedro image in fun mode
+
+### Technical
+
+- Updated `analyze_voting_status()` to accept and pass wallet_names
+- Modified HTML generation to look up and display names
+- Updated Slack notification builder to use names
+- Enhanced data structure to include `wallet_names` mapping
+
 ## [v0.2.0] - 2025-10-28
 
 ### Added
@@ -834,6 +876,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.3.0] - 2025-10-28** - Named council members with address,name format
 - **[v0.2.0] - 2025-10-28** - Add FUN_MODE with casual messaging and Pedro image
 - **[v0.1.1] - 2025-10-28** - Improve dashboard success messages
 - **[v0.1.0] - 2025-10-28** - Add dashboard link to Slack messages
@@ -849,6 +892,7 @@ Potential features for future versions:
 
 ---
 
+[v0.3.0]: https://github.com/pdiomede/grump/releases/tag/v0.3.0
 [v0.2.0]: https://github.com/pdiomede/grump/releases/tag/v0.2.0
 [v0.1.1]: https://github.com/pdiomede/grump/releases/tag/v0.1.1
 [v0.1.0]: https://github.com/pdiomede/grump/releases/tag/v0.1.0

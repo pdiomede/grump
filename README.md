@@ -366,21 +366,30 @@ The generated `index.html` report includes:
 
 ### Wallet File Format
 
-The wallet file supports:
-- One Ethereum address per line
-- Comments (lines starting with `#`)
-- Empty lines (ignored)
-- Addresses in any case (automatically normalized to lowercase)
+The wallet file supports two formats:
 
-Example:
+**Format 1: Address with Name (Recommended)**
+```
+# The Graph Council Members
+0x7EAbE4F636B937628A7Fe503bD7F06772C047FEe,Chris
+0x68AfAbC57e048b29E0741816167777c148a02b57,Adam
+0xB02ce52E8B7344d306b60CB1E0d4Db1EF86b80b0,Fubhy
+```
+
+**Format 2: Address Only (Legacy)**
 ```
 # The Graph Council Members
 0xAddress1...
 0xAddress2...
-
-# Backup addresses
-# 0xAddress3...
 ```
+
+Features:
+- One entry per line in format: `address,name`
+- Names are displayed in dashboard and Slack messages instead of addresses
+- Comments (lines starting with `#`) are supported
+- Empty lines are ignored
+- Addresses are automatically normalized to lowercase
+- Falls back to showing address if no name provided
 
 ## 🛠️ Troubleshooting
 

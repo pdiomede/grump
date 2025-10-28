@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.9"
+VERSION = "0.3.0"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -36,9 +36,14 @@ PROPOSAL_MAX_AGE_DAYS = int(os.getenv("PROPOSAL_MAX_AGE_DAYS", "10"))
 FUN_MODE = os.getenv("FUN_MODE", "N").upper() == "Y"
 
 
-def load_council_wallets() -> List[str]:
-    """Load council member wallet addresses from file"""
+def load_council_wallets() -> tuple[List[str], Dict[str, str]]:
+    """Load council member wallet addresses and names from file
+    
+    Returns:
+        tuple: (list of wallet addresses, dict mapping address -> name)
+    """
     wallets = []
+    wallet_names = {}
     wallet_path = Path(WALLETS_FILE)
     
     if not wallet_path.exists():
@@ -50,10 +55,20 @@ def load_council_wallets() -> List[str]:
             line = line.strip()
             # Skip empty lines and comments
             if line and not line.startswith('#'):
-                # Normalize to lowercase for comparison
-                wallets.append(line.lower())
+                # Check if line contains comma (address,name format)
+                if ',' in line:
+                    address, name = line.split(',', 1)
+                    address = address.strip().lower()
+                    name = name.strip()
+                    wallets.append(address)
+                    wallet_names[address] = name
+                else:
+                    # Legacy format: just address
+                    address = line.lower()
+                    wallets.append(address)
+                    wallet_names[address] = address
     
-    return wallets
+    return wallets, wallet_names
 
 
 def query_snapshot(query: str, variables: dict = None) -> dict:
@@ -146,8 +161,11 @@ def calculate_days_since(timestamp: int) -> int:
     return delta.days
 
 
-def analyze_voting_status(council_wallets: List[str]) -> Dict:
+def analyze_voting_status(council_wallets: List[str], wallet_names: Dict[str, str] = None) -> Dict:
     """Analyze voting status for all active proposals"""
+    if wallet_names is None:
+        wallet_names = {}
+    
     proposals = fetch_active_proposals()
     
     if not proposals:
@@ -233,6 +251,7 @@ def analyze_voting_status(council_wallets: List[str]) -> Dict:
     return {
         "proposals": results,
         "alerts": all_alerts,
+        "wallet_names": wallet_names,
         "summary": {
             "total_proposals": len(filtered_proposals),
             "total_alerts": len(all_alerts)
@@ -756,10 +775,11 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
 """
                 
                 for wallet in proposal['council_non_voters']:
+                    wallet_display = data.get('wallet_names', {}).get(wallet, wallet)
                     html += f"""
                             <div class="alert-details">
                                 <div class="wallet-address">
-                                    <span class="wallet-text">{wallet}</span>
+                                    <span class="wallet-text">{wallet_display}</span>
                                     <button class="copy-btn" onclick="copyToClipboard('{wallet}', this)">
                                         Copy
                                     </button>
@@ -781,9 +801,10 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
 """
                 
                 for wallet in proposal['council_non_voters']:
+                    wallet_display = data.get('wallet_names', {}).get(wallet, wallet)
                     html += f"""
                         <div class="wallet-address">
-                            <span class="wallet-text">{wallet}</span>
+                            <span class="wallet-text">{wallet_display}</span>
                             <button class="copy-btn" onclick="copyToClipboard('{wallet}', this)">
                                 Copy
                             </button>
@@ -945,9 +966,11 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
                 message_text = f"🤖 Reminder: {formatted_title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
                 message_text += f"Missing votes in the last {ALERT_THRESHOLD_DAYS} days:\n"
             
-            # Add non-voters (wallet addresses without @ symbol)
+            # Add non-voters (show names instead of addresses)
+            wallet_names = data.get('wallet_names', {})
             for wallet in proposal['council_non_voters']:
-                message_text += f"{wallet}\n"
+                wallet_display = wallet_names.get(wallet, wallet)
+                message_text += f"{wallet_display}\n"
             
             # Add link to proposal
             proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"
@@ -1037,12 +1060,12 @@ def main():
     
     # Load council member wallets
     print("\nLoading council member wallets...")
-    council_wallets = load_council_wallets()
+    council_wallets, wallet_names = load_council_wallets()
     print(f"Loaded {len(council_wallets)} council member addresses")
     
     # Fetch and analyze data
     print("\nFetching active proposals from Snapshot...")
-    data = analyze_voting_status(council_wallets)
+    data = analyze_voting_status(council_wallets, wallet_names)
     
     print(f"\nFound {data['summary']['total_proposals']} active proposal(s)")
     print(f"Generated {data['summary']['total_alerts']} alert(s)")
