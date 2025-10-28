@@ -143,6 +143,6 @@ ALERT_THRESHOLD_DAYS=3  # Send alerts after 3 days instead of 5
 
 ---
 
-**Version:** 0.0.4  
+**Version:** 0.0.9  
 **Last Updated:** October 28, 2025
 

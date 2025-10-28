@@ -90,12 +90,14 @@ python3 monitor_council_votes.py
 ```
 ============================================================
 The Graph Council Voting Monitor
-Version: v0.0.1
-Last Update: 2025-10-27
-Current Run: 2025-10-27 17:45:00 UTC
+Version: v0.0.9
+Last Update: 2025-10-28
+Current Run: 2025-10-28 12:30:00 UTC
 ============================================================
 Space: council.graphprotocol.eth
+Proposal max age: 10 days
 Alert threshold: 5 days
+Show completed proposals: No
 Output: index.html
 ============================================================
 
