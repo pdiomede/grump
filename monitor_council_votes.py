@@ -5,12 +5,13 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.6"
+VERSION = "0.0.7"
 LAST_UPDATE = "2025-10-28"
 
 import os
 import sys
 import json
+import re
 import requests
 from datetime import datetime, timezone
 from pathlib import Path
@@ -849,6 +850,23 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     return html
 
 
+def format_proposal_title(title: str) -> str:
+    """Format proposal title for Slack messages
+    
+    Converts: "GGP-0055 Deploying GRT token..."
+    To: GGP-0055 - "Deploying GRT token..."
+    """
+    # Match pattern like "GGP-0055" or "GIP-123" at the start
+    match = re.match(r'^(G[A-Z]P-\d+)\s+(.+)$', title, re.IGNORECASE)
+    if match:
+        identifier = match.group(1)
+        proposal_name = match.group(2)
+        return f'{identifier} - "{proposal_name}"'
+    else:
+        # If no pattern found, just add quotes around the whole title
+        return f'"{title}"'
+
+
 def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
     """Send Slack notifications for proposals with alerts"""
     if not SLACK_WEBHOOK_URL:
@@ -872,6 +890,7 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
         try:
             # Extract proposal identifier (try to find GGP-XXX pattern or use title)
             title = proposal['title']
+            formatted_title = format_proposal_title(title)
             proposal_id = proposal['id']
             
             # Calculate missing votes
@@ -882,7 +901,7 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             days_left_text = f"{days_left} day{'s' if days_left != 1 else ''}" if days_left >= 0 else "0 days (ENDED)"
             
             # Build the message
-            message_text = f"🤖 Reminder: {title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
+            message_text = f"🤖 Reminder: {formatted_title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
             message_text += f"Missing votes in the last {ALERT_THRESHOLD_DAYS} days:\n"
             
             # Add non-voters (wallet addresses without @ symbol)

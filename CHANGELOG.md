@@ -5,6 +5,54 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.7] - 2025-10-28
+
+### Added
+
+#### Proposal Title Formatting
+- **format_proposal_title() Function**
+  - New function to format proposal titles in Slack messages
+  - Automatically detects GGP/GIP identifiers at the start of titles
+  - Formats titles with quotes and proper separation
+  - Supports various Graph proposal patterns (GGP, GIP, etc.)
+
+### Changed
+
+#### Slack Message Format
+- **Enhanced Title Display**
+  - Proposal titles now formatted with identifier and quoted name
+  - Pattern: `GGP-XXXX - "Proposal Name"`
+  - Improves readability and professional appearance
+  - Works with all GxP-style identifiers (GGP, GIP, GAP, etc.)
+
+**Before:**
+```
+🤖 Reminder: GGP-0055 Deploying GRT token to Avalanche, Base, and Solana has 2 missing votes...
+```
+
+**After:**
+```
+🤖 Reminder: GGP-0055 - "Deploying GRT token to Avalanche, Base, and Solana" has 2 missing votes...
+```
+
+### Technical Details
+
+**Implementation:**
+- Added `re` module import for regex pattern matching
+- Regex pattern: `^(G[A-Z]P-\d+)\s+(.+)$` matches identifiers
+- Falls back to quoting entire title if no pattern matches
+- Case-insensitive matching for flexibility
+
+**Supported Patterns:**
+- GGP-0001, GGP-0055, etc. (Graph Governance Proposals)
+- GIP-0001 (Graph Improvement Proposals)
+- GAP-0001 (Graph Advancement Proposals)
+- Any G[letter]P-[number] format
+
+### Documentation
+- Updated README.md with new message format example
+- Shows properly formatted title with quotes and dash
+
 ## [v0.0.6] - 2025-10-28
 
 ### Changed
@@ -493,6 +541,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.7] - 2025-10-28** - Enhanced proposal title formatting with quotes and dash
 - **[v0.0.6] - 2025-10-28** - Remove @ symbol from wallet addresses in Slack messages
 - **[v0.0.5] - 2025-10-28** - Slack user mentions (cc) support
 - **[v0.0.4] - 2025-10-28** - Slack integration for automated notifications
@@ -502,6 +551,7 @@ Potential features for future versions:
 
 ---
 
+[v0.0.7]: https://github.com/pdiomede/grump/releases/tag/v0.0.7
 [v0.0.6]: https://github.com/pdiomede/grump/releases/tag/v0.0.6
 [v0.0.5]: https://github.com/pdiomede/grump/releases/tag/v0.0.5
 [v0.0.4]: https://github.com/pdiomede/grump/releases/tag/v0.0.4

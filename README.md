@@ -228,7 +228,7 @@ To get Slack User IDs:
 When a proposal has missing votes after the alert threshold, you'll receive a message like:
 
 ```
-🤖 Reminder: GGP-XXX has 2 missing votes, and is ending in 3 days.
+🤖 Reminder: GGP-0055 - "Deploying GRT token to Avalanche, Base, and Solana" has 2 missing votes, and is ending in 3 days.
 Missing votes in the last 5 days:
 0x1234567890123456789012345678901234567890
 0x2345678901234567890123456789012345678901
@@ -446,5 +446,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.0.6)
+**Last Updated:** October 28, 2025 (v0.0.7)
 
