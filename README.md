@@ -353,6 +353,7 @@ The generated `index.html` report includes:
 | `SLACK_MENTION_USERS` | _(empty)_ | Comma-separated Slack User IDs to mention (optional) |
 | `POST_TO_SLACK` | `N` | Post to Slack (Y) or save to file (N) |
 | `SNAPSHOT_SPACE` | `council.graphprotocol.eth` | The Snapshot space to monitor |
+| `PROPOSAL_MAX_AGE_DAYS` | `10` | Maximum age of proposals to monitor (in days) |
 | `ALERT_THRESHOLD_DAYS` | `5` | Number of days before alerting for non-voters |
 | `WALLETS_FILE` | `wallets.txt` | Path to file containing council member addresses |
 | `OUTPUT_HTML` | `index.html` | Output HTML file path |
@@ -458,5 +459,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.0.8)
+**Last Updated:** October 28, 2025 (v0.0.9)
 

@@ -5,6 +5,68 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.9] - 2025-10-28
+
+### Added
+
+#### Proposal Age Filtering
+- **PROPOSAL_MAX_AGE_DAYS Configuration Variable**
+  - New `PROPOSAL_MAX_AGE_DAYS` environment variable (default: 10 days)
+  - Only monitors proposals created within the last N days
+  - Helps focus on recent proposals and ignore very old ones
+  - Reduces noise from stale proposals
+
+- **Age-Based Filtering Logic**
+  - Proposals older than `PROPOSAL_MAX_AGE_DAYS` are automatically excluded
+  - Filtering happens before vote analysis for efficiency
+  - Count reflects only proposals within the age window
+  - Console output shows the configured max age setting
+
+### Changed
+
+#### Proposal Analysis
+- **analyze_voting_status() Function**
+  - Now filters proposals by creation date before processing
+  - Only includes proposals created within `PROPOSAL_MAX_AGE_DAYS`
+  - Returns empty results if no proposals match age criteria
+  - More efficient processing of recent proposals only
+
+- **Console Output**
+  - Added "Proposal max age: X days" to startup information
+  - Helps verify the configuration is correct
+  - Shows the age filter being applied
+
+### Technical Details
+
+**Configuration:**
+```env
+PROPOSAL_MAX_AGE_DAYS=10  # Only check proposals from last 10 days (default)
+PROPOSAL_MAX_AGE_DAYS=30  # Check proposals from last 30 days
+PROPOSAL_MAX_AGE_DAYS=365 # Check all active proposals (1 year window)
+```
+
+**Example:**
+- Today is October 28, 2025
+- `PROPOSAL_MAX_AGE_DAYS=10`
+- Only proposals created on or after October 18, 2025 will be monitored
+- Older proposals (e.g., from August) will be ignored
+
+**Use Case:**
+Before this change, a 69-day-old proposal (GGP-0055) was generating alerts even though it's very old. Now with `PROPOSAL_MAX_AGE_DAYS=10`, only recent proposals will be checked, reducing alert fatigue.
+
+**Benefits:**
+- Focus on recent proposals that need attention
+- Reduce alert fatigue from very old proposals
+- Faster execution (fewer proposals to process)
+- Configurable - increase the window if needed
+- Default of 10 days balances recency vs. coverage
+
+**Implementation:**
+- Filtering uses proposal creation timestamp
+- Compares against current UTC time
+- Simple integer day comparison (>= operator)
+- Returns early if no proposals match criteria
+
 ## [v0.0.8] - 2025-10-28
 
 ### Added
@@ -628,6 +690,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.9] - 2025-10-28** - Add proposal age filtering (PROPOSAL_MAX_AGE_DAYS)
 - **[v0.0.8] - 2025-10-28** - Add POST_TO_SLACK toggle for file/Slack output
 - **[v0.0.7] - 2025-10-28** - Enhanced proposal title formatting with quotes and dash
 - **[v0.0.6] - 2025-10-28** - Remove @ symbol from wallet addresses in Slack messages
@@ -639,6 +702,7 @@ Potential features for future versions:
 
 ---
 
+[v0.0.9]: https://github.com/pdiomede/grump/releases/tag/v0.0.9
 [v0.0.8]: https://github.com/pdiomede/grump/releases/tag/v0.0.8
 [v0.0.7]: https://github.com/pdiomede/grump/releases/tag/v0.0.7
 [v0.0.6]: https://github.com/pdiomede/grump/releases/tag/v0.0.6

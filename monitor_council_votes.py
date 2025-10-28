@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.8"
+VERSION = "0.0.9"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -32,6 +32,7 @@ SHOW_COMPLETED_PROPOSALS = os.getenv("SHOW_COMPLETED_PROPOSALS", "N").upper() ==
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
 SLACK_MENTION_USERS = os.getenv("SLACK_MENTION_USERS", "")
 POST_TO_SLACK = os.getenv("POST_TO_SLACK", "N").upper() == "Y"
+PROPOSAL_MAX_AGE_DAYS = int(os.getenv("PROPOSAL_MAX_AGE_DAYS", "10"))
 
 
 def load_council_wallets() -> List[str]:
@@ -158,10 +159,29 @@ def analyze_voting_status(council_wallets: List[str]) -> Dict:
             }
         }
     
+    # Filter proposals by max age
+    now = datetime.now(timezone.utc)
+    filtered_proposals = []
+    for proposal in proposals:
+        created_date = datetime.fromtimestamp(proposal["created"], tz=timezone.utc)
+        days_old = (now - created_date).days
+        if days_old <= PROPOSAL_MAX_AGE_DAYS:
+            filtered_proposals.append(proposal)
+    
+    if not filtered_proposals:
+        return {
+            "proposals": [],
+            "alerts": [],
+            "summary": {
+                "total_proposals": 0,
+                "total_alerts": 0
+            }
+        }
+    
     results = []
     all_alerts = []
     
-    for proposal in proposals:
+    for proposal in filtered_proposals:
         proposal_id = proposal["id"]
         proposal_title = proposal["title"]
         created_timestamp = proposal["created"]
@@ -213,7 +233,7 @@ def analyze_voting_status(council_wallets: List[str]) -> Dict:
         "proposals": results,
         "alerts": all_alerts,
         "summary": {
-            "total_proposals": len(proposals),
+            "total_proposals": len(filtered_proposals),
             "total_alerts": len(all_alerts)
         }
     }
@@ -988,6 +1008,7 @@ def main():
     print(f"Current Run: {current_time}")
     print("=" * 60)
     print(f"Space: {SNAPSHOT_SPACE}")
+    print(f"Proposal max age: {PROPOSAL_MAX_AGE_DAYS} days")
     print(f"Alert threshold: {ALERT_THRESHOLD_DAYS} days")
     print(f"Show completed proposals: {'Yes' if SHOW_COMPLETED_PROPOSALS else 'No'}")
     print(f"Output: {OUTPUT_HTML}")
