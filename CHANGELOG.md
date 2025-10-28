@@ -5,6 +5,73 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.5] - 2025-10-28
+
+### Added
+
+#### Slack User Mentions
+- **SLACK_MENTION_USERS Configuration**
+  - Added `SLACK_MENTION_USERS` environment variable for mentioning specific users
+  - Supports comma-separated list of Slack User IDs (e.g., `U01234ABCDE,U56789FGHIJ`)
+  - User IDs are permanent and work even when display names change
+  - Optional feature - leave empty to disable mentions
+  
+- **CC Mentions in Notifications**
+  - Slack notifications now include "cc @User1 @User2" at the end
+  - Uses proper Slack mention format: `<@USER_ID>`
+  - Mentioned users receive Slack notifications
+  - Great for alerting team leads or coordinators
+  
+- **HOW_TO_GET_SLACK_USER_IDS.md**
+  - Complete guide on finding Slack User IDs
+  - Three methods: Copy member ID, profile URL, and API
+  - Examples and testing instructions
+  - Troubleshooting tips
+
+#### Documentation Updates
+- **README.md**
+  - Added SLACK_MENTION_USERS to configuration instructions
+  - Updated Slack message format example with cc mentions
+  - Added configuration table entry for user mentions
+  - Quick reference on how to get User IDs
+  
+### Changed
+- **Slack Message Format**
+  - Messages now optionally end with: `cc <@USER_ID1> <@USER_ID2>`
+  - Appears in Slack as: `cc @Pedro @Andrew Clews`
+  - Only included when SLACK_MENTION_USERS is configured
+
+### Technical Details
+
+**Configuration Example:**
+```env
+SLACK_MENTION_USERS=U01ABC123,U02DEF456
+```
+
+**Message Example:**
+```
+🤖 Reminder: GGP-XXX has 2 missing votes, and is ending in 3 days.
+Missing votes in the last 5 days:
+@0x1234...
+
+Please cast your vote here asap: [link]
+Thank you!
+
+cc @Pedro @Andrew Clews
+```
+
+**Implementation:**
+- Parses comma-separated User IDs from environment variable
+- Formats mentions using Slack's `<@USER_ID>` syntax
+- Appends to message only if User IDs are configured
+- Supports multiple users with single or multiple spaces
+
+### Benefits
+- Direct notifications to team leads/coordinators
+- Ensures key people are always alerted
+- Works reliably even when users change display names
+- Optional - no breaking changes for existing configurations
+
 ## [v0.0.4] - 2025-10-28
 
 ### Added
@@ -399,6 +466,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.5] - 2025-10-28** - Slack user mentions (cc) support
 - **[v0.0.4] - 2025-10-28** - Slack integration for automated notifications
 - **[v0.0.3] - 2025-10-27** - Hide completed proposals feature
 - **[v0.0.2] - 2025-10-27** - UI improvements, color-coding, days left counter
@@ -406,6 +474,7 @@ Potential features for future versions:
 
 ---
 
+[v0.0.5]: https://github.com/pdiomede/grump/releases/tag/v0.0.5
 [v0.0.4]: https://github.com/pdiomede/grump/releases/tag/v0.0.4
 [v0.0.3]: https://github.com/pdiomede/grump/releases/tag/v0.0.3
 [v0.0.2]: https://github.com/pdiomede/grump/releases/tag/v0.0.2

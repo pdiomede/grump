@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.4"
+VERSION = "0.0.5"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -29,6 +29,7 @@ OUTPUT_HTML = os.getenv("OUTPUT_HTML", "index.html")
 COUNCIL_MEMBERS_COUNT = int(os.getenv("COUNCIL_MEMBERS_COUNT", "6"))
 SHOW_COMPLETED_PROPOSALS = os.getenv("SHOW_COMPLETED_PROPOSALS", "N").upper() == "Y"
 SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
+SLACK_MENTION_USERS = os.getenv("SLACK_MENTION_USERS", "")
 
 
 def load_council_wallets() -> List[str]:
@@ -892,6 +893,13 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"
             message_text += f"\nPlease cast your vote here asap: {proposal_link}\n"
             message_text += "Thank you!"
+            
+            # Add user mentions if configured
+            if SLACK_MENTION_USERS:
+                user_ids = [uid.strip() for uid in SLACK_MENTION_USERS.split(',') if uid.strip()]
+                if user_ids:
+                    mentions = ' '.join([f"<@{uid}>" for uid in user_ids])
+                    message_text += f"\n\ncc {mentions}"
             
             # Send to Slack
             payload = {

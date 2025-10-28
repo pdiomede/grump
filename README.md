@@ -213,6 +213,16 @@ b. Add the webhook URL to your `.env` file:
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR_WORKSPACE_ID/YOUR_CHANNEL_ID/YOUR_SECRET_TOKEN
 ```
 
+c. **(Optional)** Add Slack user IDs to mention at the end of notifications:
+```env
+SLACK_MENTION_USERS=U01234ABCDE,U56789FGHIJ
+```
+
+To get Slack User IDs:
+- Click on a user's profile in Slack
+- Click "More" (three dots) > "Copy member ID"
+- See `HOW_TO_GET_SLACK_USER_IDS.md` for detailed instructions
+
 **Slack Message Format:**
 
 When a proposal has missing votes after the alert threshold, you'll receive a message like:
@@ -225,7 +235,11 @@ Missing votes in the last 5 days:
 
 Please cast your vote here asap: https://snapshot.org/#/council.graphprotocol.eth/proposal/0xabc...
 Thank you!
+
+cc @Pedro @Andrew Clews
 ```
+
+**Note:** The cc mentions at the end appear if you configure `SLACK_MENTION_USERS` in your `.env` file.
 
 **Note:** If `SLACK_WEBHOOK_URL` is not set or empty, Slack notifications will be skipped.
 
@@ -325,6 +339,7 @@ The generated `index.html` report includes:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `SLACK_WEBHOOK_URL` | _(empty)_ | Slack webhook URL for notifications (optional) |
+| `SLACK_MENTION_USERS` | _(empty)_ | Comma-separated Slack User IDs to mention (optional) |
 | `SNAPSHOT_SPACE` | `council.graphprotocol.eth` | The Snapshot space to monitor |
 | `ALERT_THRESHOLD_DAYS` | `5` | Number of days before alerting for non-voters |
 | `WALLETS_FILE` | `wallets.txt` | Path to file containing council member addresses |
@@ -431,5 +446,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.0.4)
+**Last Updated:** October 28, 2025 (v0.0.5)
 
