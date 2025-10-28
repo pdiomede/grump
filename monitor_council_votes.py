@@ -564,13 +564,6 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             font-size: 1.2rem;
         }}
         
-        .no-alerts::before {{
-            content: "✓";
-            display: block;
-            font-size: 4rem;
-            margin-bottom: 20px;
-        }}
-        
         .footer {{
             padding: 20px 30px;
             background: #0C0A1D;
