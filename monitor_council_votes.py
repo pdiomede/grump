@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.9"
+VERSION = "0.1.0"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -939,6 +939,9 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"
             message_text += f"\nPlease cast your vote here asap: {proposal_link}\n"
             message_text += "Thank you!"
+            
+            # Add dashboard link
+            message_text += "\n\nFull Details here:\nhttps://dashboards.thegraph.foundation/grump/"
             
             # Add user mentions if configured
             if SLACK_MENTION_USERS:

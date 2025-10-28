@@ -5,6 +5,46 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.1.0] - 2025-10-28
+
+### Added
+
+#### Dashboard Link in Slack Messages
+- **Dashboard URL in Notifications**
+  - Added link to dashboard at the end of each Slack notification
+  - URL: https://dashboards.thegraph.foundation/grump/
+  - Provides easy access to full voting details
+  - Shows after "Thank you!" and before user mentions
+
+### Changed
+
+#### Slack Message Format
+- **Enhanced Message with Dashboard Link**
+  - Messages now include "Full Details here:" section
+  - Direct link to the voting monitor dashboard
+  - Allows team to quickly review all proposals and voting status
+  - Positioned between main message and cc mentions
+
+**Updated Message Format:**
+```
+🤖 Reminder: [Proposal details]
+[Missing votes]
+
+Please cast your vote here asap: [Snapshot link]
+Thank you!
+
+Full Details here:
+https://dashboards.thegraph.foundation/grump/
+
+cc @User1 @User2
+```
+
+### Benefits
+- Quick access to comprehensive dashboard
+- Single source of truth for all voting data
+- Reduces need for multiple links
+- Better user experience with centralized information
+
 ## [v0.0.9] - 2025-10-28
 
 ### Added
@@ -690,6 +730,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.1.0] - 2025-10-28** - Add dashboard link to Slack messages
 - **[v0.0.9] - 2025-10-28** - Add proposal age filtering (PROPOSAL_MAX_AGE_DAYS)
 - **[v0.0.8] - 2025-10-28** - Add POST_TO_SLACK toggle for file/Slack output
 - **[v0.0.7] - 2025-10-28** - Enhanced proposal title formatting with quotes and dash
@@ -702,6 +743,7 @@ Potential features for future versions:
 
 ---
 
+[v0.1.0]: https://github.com/pdiomede/grump/releases/tag/v0.1.0
 [v0.0.9]: https://github.com/pdiomede/grump/releases/tag/v0.0.9
 [v0.0.8]: https://github.com/pdiomede/grump/releases/tag/v0.0.8
 [v0.0.7]: https://github.com/pdiomede/grump/releases/tag/v0.0.7

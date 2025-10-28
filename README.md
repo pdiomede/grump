@@ -247,6 +247,9 @@ Missing votes in the last 5 days:
 Please cast your vote here asap: https://snapshot.org/#/council.graphprotocol.eth/proposal/0xabc...
 Thank you!
 
+Full Details here:
+https://dashboards.thegraph.foundation/grump/
+
 cc @Pedro @Andrew Clews
 ```
 
@@ -459,5 +462,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.0.9)
+**Last Updated:** October 28, 2025 (v0.1.0)
 
