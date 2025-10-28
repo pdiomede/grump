@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.5"
+VERSION = "0.0.6"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -885,9 +885,9 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             message_text = f"🤖 Reminder: {title} has {missing_votes} missing vote{'s' if missing_votes != 1 else ''}, and is ending in {days_left_text}.\n"
             message_text += f"Missing votes in the last {ALERT_THRESHOLD_DAYS} days:\n"
             
-            # Add non-voters (using @ mention format)
+            # Add non-voters (wallet addresses without @ symbol)
             for wallet in proposal['council_non_voters']:
-                message_text += f"@{wallet}\n"
+                message_text += f"{wallet}\n"
             
             # Add link to proposal
             proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"

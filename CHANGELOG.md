@@ -5,6 +5,33 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.6] - 2025-10-28
+
+### Changed
+
+#### Slack Message Formatting
+- **Wallet Address Display**
+  - Removed "@" symbol prefix from wallet addresses in Slack notifications
+  - Addresses now display as plain text (e.g., `0x1234...` instead of `@0x1234...`)
+  - Cleaner message format and better readability
+  - Avoids confusion with Slack user mentions which use `<@USER_ID>` format
+
+**Before:**
+```
+Missing votes in the last 5 days:
+@0x1234567890123456789012345678901234567890
+```
+
+**After:**
+```
+Missing votes in the last 5 days:
+0x1234567890123456789012345678901234567890
+```
+
+### Documentation
+- Updated README.md with corrected message format example
+- Message format now shows wallet addresses without @ prefix
+
 ## [v0.0.5] - 2025-10-28
 
 ### Added
@@ -466,6 +493,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.6] - 2025-10-28** - Remove @ symbol from wallet addresses in Slack messages
 - **[v0.0.5] - 2025-10-28** - Slack user mentions (cc) support
 - **[v0.0.4] - 2025-10-28** - Slack integration for automated notifications
 - **[v0.0.3] - 2025-10-27** - Hide completed proposals feature
@@ -474,6 +502,7 @@ Potential features for future versions:
 
 ---
 
+[v0.0.6]: https://github.com/pdiomede/grump/releases/tag/v0.0.6
 [v0.0.5]: https://github.com/pdiomede/grump/releases/tag/v0.0.5
 [v0.0.4]: https://github.com/pdiomede/grump/releases/tag/v0.0.4
 [v0.0.3]: https://github.com/pdiomede/grump/releases/tag/v0.0.3

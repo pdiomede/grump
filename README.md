@@ -230,8 +230,8 @@ When a proposal has missing votes after the alert threshold, you'll receive a me
 ```
 🤖 Reminder: GGP-XXX has 2 missing votes, and is ending in 3 days.
 Missing votes in the last 5 days:
-@0x1234567890123456789012345678901234567890
-@0x2345678901234567890123456789012345678901
+0x1234567890123456789012345678901234567890
+0x2345678901234567890123456789012345678901
 
 Please cast your vote here asap: https://snapshot.org/#/council.graphprotocol.eth/proposal/0xabc...
 Thank you!
@@ -446,5 +446,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.0.5)
+**Last Updated:** October 28, 2025 (v0.0.6)
 
