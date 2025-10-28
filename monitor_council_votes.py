@@ -5,7 +5,7 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.2.0"
+VERSION = "0.0.9"
 LAST_UPDATE = "2025-10-28"
 
 import os
@@ -818,7 +818,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         if FUN_MODE:
             html += """
             <div class="no-alerts">
-                🎉 Woohoo! Nothing to see here. Everyone's chilling! 😎
+                Woohoo! Nothing to see here.
             </div>
 """
         else:
