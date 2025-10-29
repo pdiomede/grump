@@ -975,8 +975,7 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             # Add link to proposal
             proposal_link = f"https://snapshot.org/#/{SNAPSHOT_SPACE}/proposal/{proposal_id}"
             if FUN_MODE:
-                message_text += f"\n🎯 Cast your vote NOW and be a hero: {proposal_link}\n"
-                message_text += "Let's gooooo! 🚀"
+                message_text += f"\nCast your vote NOW: {proposal_link}\n"
             else:
                 message_text += f"\nPlease cast your vote here asap: {proposal_link}\n"
                 message_text += "Thank you!"
