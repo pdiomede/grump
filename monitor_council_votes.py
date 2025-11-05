@@ -690,11 +690,11 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             font-size: 16px;
             display: inline-block;
             transition: transform 0.3s ease;
-            filter: grayscale(0.3) brightness(0.9);
+            filter: grayscale(1) brightness(1.3) contrast(0.9);
         }}
         
         .breadcrumb a:hover .home-icon::before {{
-            filter: grayscale(0) brightness(1.1);
+            filter: grayscale(1) brightness(1.5) contrast(1);
         }}
         
         .breadcrumb-separator {{
