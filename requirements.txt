@@ -1,3 +1,7 @@
 requests==2.31.0
 python-dotenv==1.0.0
 
+# Web server for authentication gateway
+bottle>=0.12.25
+
+

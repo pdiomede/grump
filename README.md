@@ -2,6 +2,35 @@
 
 A Python-based monitoring tool that tracks voting activity on The Graph Council's governance proposals via Snapshot and alerts when council members haven't voted after a configurable threshold (default: 5 days).
 
+## 🔐 Authentication System (NEW!)
+
+The GRUMP dashboard now includes a secure email-based OTP authentication system! Users must login before accessing the dashboard.
+
+**Quick Setup:**
+```bash
+# Run the interactive setup script
+./setup_auth.sh
+
+# Or manually configure:
+cp .env.example .env
+# Edit .env with your SMTP credentials
+
+# Start the authentication gateway
+python3 auth_gate.py
+```
+
+**Visit:** http://localhost:38081 (login page will be shown)
+
+**For detailed setup instructions, see:** [AUTH_SETUP.md](AUTH_SETUP.md)
+
+**Key Features:**
+- 🔐 Email-based OTP authentication
+- 📧 6-digit codes sent via email (10 minute expiry)
+- 🍪 7-day session cookies
+- 👥 Whitelist-based access control
+- 🛡️ Rate limiting & audit logging
+- 🎨 Beautiful login UI
+
 ## 🎯 Purpose
 
 The Graph Council consists of 6 members who vote on Graph Governance Proposals (GGPs) posted on https://snapshot.org/#/council.graphprotocol.eth. This tool helps ensure full participation by:
@@ -472,5 +501,5 @@ This tool is provided as-is for monitoring The Graph Council voting activity.
 
 ---
 
-**Last Updated:** October 28, 2025 (v0.2.0)
+**Last Updated:** November 5, 2025 (v0.0.11)
 

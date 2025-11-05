@@ -735,7 +735,7 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     
     <div class="container">
         <div class="header">
-            <h1>🗳️ The Graph Council Voting Monitor</h1>
+            <h1>😡 GRUMP Dashboard </h1>
             <p><a href="https://snapshot.org/#/s:{SNAPSHOT_SPACE}" target="_blank" class="header-link">Tracking voting activity for The Graph Council</a></p>
             <p>Last updated: {timestamp}</p>
         </div>
