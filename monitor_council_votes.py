@@ -656,9 +656,12 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
         }}
         
         .breadcrumb {{
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
             padding: 15px 30px;
-            background: #0C0A1D;
-            border-bottom: 1px solid #9CA3AF;
+            background: rgba(156, 163, 175, 0.05);
+            border: 1px solid #9CA3AF;
+            border-radius: 10px;
             font-size: 14px;
             display: flex;
             align-items: center;
@@ -671,22 +674,33 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
         }}
         
         .breadcrumb a:hover {{
             color: #F8F6FF;
-            text-decoration: underline;
+        }}
+        
+        .breadcrumb a:hover .home-icon::before {{
+            transform: scale(1.1);
         }}
         
         .breadcrumb .home-icon::before {{
             content: "🏠";
             font-size: 16px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+            filter: grayscale(0.3) brightness(0.9);
+        }}
+        
+        .breadcrumb a:hover .home-icon::before {{
+            filter: grayscale(0) brightness(1.1);
         }}
         
         .breadcrumb-separator {{
             color: #9CA3AF;
             font-weight: 400;
+            margin: 0 5px;
         }}
         
         .breadcrumb span:last-child {{
@@ -710,20 +724,20 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
     </style>
 </head>
 <body>
+    <div class="breadcrumb">
+        <a href="../index.html">
+            <span class="home-icon"></span>
+            <b>Home</b>
+        </a>
+        <span class="breadcrumb-separator">>></span>
+        <span>GRUMP Dashboard</span>
+    </div>
+    
     <div class="container">
         <div class="header">
             <h1>🗳️ The Graph Council Voting Monitor</h1>
             <p><a href="https://snapshot.org/#/s:{SNAPSHOT_SPACE}" target="_blank" class="header-link">Tracking voting activity for The Graph Council</a></p>
             <p>Last updated: {timestamp}</p>
-        </div>
-        
-        <div class="breadcrumb">
-            <a href="../index.html">
-                <span class="home-icon"></span>
-                <b>Home</b>
-            </a>
-            <span class="breadcrumb-separator">>></span>
-            <span>GRUMP Dashboard</span>
         </div>
         
         <div class="content">

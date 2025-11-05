@@ -11,24 +11,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Navigation Enhancement
 - **Breadcrumb Navigation**
-  - Added breadcrumb navigation bar between header and content
-  - Home icon emoji (🏠) displayed via CSS pseudo-element
+  - Added breadcrumb navigation bar positioned outside and above the main container
+  - Home icon emoji (🏠) displayed via CSS pseudo-element with custom styling
   - Link to parent directory (`../index.html`)
   - Current page indicator: "GRUMP Dashboard"
-  - Styled to match dark theme color palette
-  - Subtle hover effects on home link
+  - Standalone card design with rounded corners
+  - Centered layout with max-width matching container
   - Responsive and mobile-friendly design
 
 #### UI/UX Improvements
 - **Breadcrumb Styling**
-  - Dark navy background (#0C0A1D) matching main theme
+  - Semi-transparent background (rgba(156, 163, 175, 0.05))
   - Light gray text (#9CA3AF) for links
   - White text (#F8F6FF) for current page
-  - Border separator using `>>` symbol
+  - Rounded borders (10px) with gray border (#9CA3AF)
+  - Separator using `>>` symbol with spacing
   - Smooth color transitions on hover
-  - Proper spacing and alignment
+  - Proper spacing and alignment (20px margin-bottom)
+  
+- **Home Emoji Styling**
+  - CSS filter effects for color harmony (grayscale 0.3, brightness 0.9)
+  - Animated scale effect on hover (1.1x)
+  - Brightness increase on hover for visual feedback
+  - Smooth transitions for polished interaction
 
 ### Technical Details
+
+**Breadcrumb Position:**
+- Located outside the main `.container` div
+- Appears at the top of the page before all other content
+- Independent card-style element
 
 **Breadcrumb Structure:**
 ```html
@@ -44,17 +56,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **CSS Features:**
 - Flexbox layout for proper alignment
-- CSS pseudo-element for home emoji
-- Hover state transitions
-- Consistent with existing color scheme
-- Border-bottom separator line
+- CSS pseudo-element `::before` for home emoji
+- CSS filters for emoji color styling
+- Transform animations on hover
+- Max-width constraint (1200px) with auto margins
+- Border and rounded corners for card effect
+
+**Hover Effects:**
+- Home link text color transitions from gray to white
+- Home emoji scales up (1.1x) and brightens
+- Smooth 0.3s transitions for all effects
 
 **Benefits:**
-- Improved navigation hierarchy
+- Clear visual hierarchy with breadcrumb outside main frame
+- Improved navigation with prominent placement
 - Better user experience for multi-page dashboards
-- Clear location indicator
+- Emoji styling matches page color scheme
+- Professional appearance with subtle animations
 - Easy return to main index
-- Professional appearance
 
 ## [v0.0.11] - 2025-11-05
 
