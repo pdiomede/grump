@@ -5,6 +5,284 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.12] - 2025-11-05
+
+### Added
+
+#### Navigation Enhancement
+- **Breadcrumb Navigation**
+  - Added breadcrumb navigation bar between header and content
+  - Home icon emoji (🏠) displayed via CSS pseudo-element
+  - Link to parent directory (`../index.html`)
+  - Current page indicator: "GRUMP Dashboard"
+  - Styled to match dark theme color palette
+  - Subtle hover effects on home link
+  - Responsive and mobile-friendly design
+
+#### UI/UX Improvements
+- **Breadcrumb Styling**
+  - Dark navy background (#0C0A1D) matching main theme
+  - Light gray text (#9CA3AF) for links
+  - White text (#F8F6FF) for current page
+  - Border separator using `>>` symbol
+  - Smooth color transitions on hover
+  - Proper spacing and alignment
+
+### Technical Details
+
+**Breadcrumb Structure:**
+```html
+<div class="breadcrumb">
+    <a href="../index.html">
+        <span class="home-icon"></span>
+        <b>Home</b>
+    </a>
+    <span class="breadcrumb-separator">>></span>
+    <span>GRUMP Dashboard</span>
+</div>
+```
+
+**CSS Features:**
+- Flexbox layout for proper alignment
+- CSS pseudo-element for home emoji
+- Hover state transitions
+- Consistent with existing color scheme
+- Border-bottom separator line
+
+**Benefits:**
+- Improved navigation hierarchy
+- Better user experience for multi-page dashboards
+- Clear location indicator
+- Easy return to main index
+- Professional appearance
+
+## [v0.0.11] - 2025-11-05
+
+### Added
+
+#### Authentication System (Major Feature)
+- **Email-based OTP Authentication**
+  - Complete authentication gateway for dashboard protection
+  - One-Time Password (OTP) system with 6-digit codes
+  - OTP codes expire after 10 minutes for security
+  - Email delivery via SMTP (Gmail, SendGrid, AWS SES, Mailgun supported)
+  - Beautiful, modern login UI with orange pastel theme
+  
+- **Session Management**
+  - Secure 7-day session cookies with signed tokens
+  - HttpOnly and SameSite cookie protection
+  - Automatic session validation on each request
+  - Clean logout functionality
+  
+- **Access Control**
+  - Email whitelist system (`allowed_people.txt`)
+  - Wildcard domain support (e.g., `*@thegraph.foundation`)
+  - Individual email authorization
+  - Pre-configured with @thegraph.foundation and @edgeandnode.com
+  
+- **Security Features**
+  - Rate limiting: 5 OTP requests per hour per email
+  - HMAC-signed session tokens
+  - Secure cookie settings for production (HTTPS)
+  - Audit logging of all authentication events
+  - Environment-based configuration with `.env` file
+  
+- **Core Files**
+  - `auth_gate.py` - Authentication gateway server (Bottle.py)
+  - `login.html` - Responsive login page UI
+  - `allowed_people.txt` - Email whitelist
+  - `auth_gate.service` - Systemd service for production
+  - `.env.example` - Environment configuration template
+
+#### Deployment & Setup Tools
+- **Interactive Setup Script**
+  - `setup_auth.sh` - Automated configuration wizard
+  - Auto-generates cookie secret
+  - Interactive SMTP credential collection
+  - Creates `.env` file automatically
+  
+- **Verification & Testing**
+  - `test_auth_setup.py` - Complete setup verification
+  - Checks all required files and configurations
+  - Tests SMTP connection
+  - Validates environment variables
+  - Verifies whitelist configuration
+  
+- **Production Deployment**
+  - `deploy_auth_to_production.sh` - VPS deployment script
+  - Automated file copying to production paths
+  - Permission setting and user configuration
+  - Systemd service installation
+  - Python dependency installation
+  
+#### Comprehensive Documentation
+- **Setup Guides**
+  - `AUTH_SETUP.md` - Complete authentication setup guide
+  - `QUICK_AUTH_REFERENCE.md` - One-page quick reference
+  - `IMPLEMENTATION_SUMMARY.md` - Technical documentation
+  - `AUTH_MIGRATION_COMPLETE.md` - Migration summary
+  - `PRODUCTION_DEPLOYMENT.md` - VPS deployment guide
+  - `TESTING_AUTH.md` - Complete testing procedures
+  
+- **Updated Main Documentation**
+  - README.md now includes authentication section
+  - Quick start instructions
+  - Key features overview
+  - Links to detailed guides
+
+### Changed
+
+#### Port Configuration
+- **Development Port: 38081**
+  - Changed from 8081 to 38081 (higher range port)
+  - Reduces conflicts with common development tools
+  - Still above 1024 (no root privileges required)
+  - All documentation updated with new port
+
+#### Dual-Mode Operation
+- **Environment Detection**
+  - Auto-detects production vs. development environment
+  - Uses `/var/www/grump-config/` and `/var/www/iproot/grump/` in production
+  - Uses current directory in development
+  - Seamless operation in both environments
+  
+#### UI/UX Design
+- **Login Page Theme**
+  - Orange pastel color scheme
+  - Gradient background: peachy orange tones
+  - Semi-transparent white container
+  - Warm brown typography
+  - Vibrant orange buttons
+  - Modern, responsive design
+  - Mobile-friendly layout
+
+### Technical Details
+
+**Architecture:**
+```
+User Request
+    ↓
+auth_gate.py (Port 38081)
+    ↓
+Check Session Cookie
+    ↓
+┌─────────────┬──────────────┐
+No Session    Valid Session
+    ↓              ↓
+login.html    index.html
+    ↓
+OTP Flow
+    ↓
+Create Session
+    ↓
+Dashboard Access
+```
+
+**Authentication Flow:**
+1. User visits dashboard → Redirected to login page
+2. Enter email → Validate against whitelist
+3. Generate OTP → Send via SMTP
+4. User enters OTP → Validate code
+5. Create session → Set secure cookie
+6. Access dashboard → Session persists 7 days
+
+**Configuration (`.env`):**
+```env
+AUTH_COOKIE_SECRET=<64-char-secret>
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
+SMTP_FROM=your-email@gmail.com
+DASHBOARD_URL=http://localhost:38081/
+```
+
+**Production Paths:**
+- Config: `/var/www/grump-config/`
+- Web: `/var/www/iproot/grump/`
+- Logs: `/var/www/iproot/grump/logs/auth_gateway.log`
+- Service: `grump_auth.service`
+
+**Dependencies Added:**
+- `bottle>=0.12.25` - Web framework
+- `python-dotenv>=1.0.0` - Environment management
+
+### Security
+
+**Features:**
+- ✅ Signed session cookies (HMAC-SHA256)
+- ✅ Rate limiting (5 requests/hour)
+- ✅ OTP expiration (10 minutes)
+- ✅ Session expiration (7 days)
+- ✅ Email whitelist validation
+- ✅ HTTPS-ready with secure cookies
+- ✅ Audit logging of all events
+- ✅ No plaintext password storage
+
+**Recommended Setup:**
+- Use Gmail App Passwords (not regular passwords)
+- Enable 2FA on email account
+- Set strong `AUTH_COOKIE_SECRET` (64+ chars)
+- Restrict whitelist to authorized domains
+- Deploy behind Nginx with HTTPS
+- Monitor logs regularly
+
+### Benefits
+
+**For Users:**
+- 🔐 Secure access to dashboard
+- 📧 Familiar email-based authentication
+- 🍪 Stay logged in for 7 days
+- 🎨 Beautiful, modern login experience
+- 📱 Works on all devices
+
+**For Administrators:**
+- 👥 Easy user management via whitelist
+- 📊 Complete audit trail
+- 🚀 Simple deployment process
+- 🔧 Comprehensive documentation
+- 🛡️ Enterprise-grade security
+- 🔄 Works in dev and production
+
+### Documentation
+
+**Quick Start:**
+```bash
+# Interactive setup
+./setup_auth.sh
+
+# Verify setup
+./test_auth_setup.py
+
+# Start server
+python3 auth_gate.py
+
+# Visit: http://localhost:38081
+```
+
+**Production Deployment:**
+```bash
+# Upload files to VPS
+# Then run:
+sudo bash /home/graph/ftpbox/grump/deploy_auth_to_production.sh
+```
+
+### Compatibility
+
+- Python 3.7+
+- Works with existing dashboard (no code changes needed)
+- Backwards compatible (can be disabled by not starting auth_gate.py)
+- Cross-platform (Linux, macOS, Windows)
+
+### Testing
+
+- ✅ Local testing with `test_auth_setup.py`
+- ✅ SMTP connection verification
+- ✅ Whitelist validation
+- ✅ OTP delivery testing
+- ✅ Session persistence testing
+- ✅ Rate limiting verification
+
 ## [v0.0.10] - 2025-10-28
 
 ### Added
@@ -876,6 +1154,8 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.12] - 2025-11-05** - Breadcrumb navigation with home emoji
+- **[v0.0.11] - 2025-11-05** - Email-based OTP authentication system (Major Feature)
 - **[v0.0.10] - 2025-10-28** - Named council members with address,name format
 - **[v0.2.0] - 2025-10-28** - Add FUN_MODE with casual messaging and Pedro image
 - **[v0.1.1] - 2025-10-28** - Improve dashboard success messages
@@ -892,6 +1172,8 @@ Potential features for future versions:
 
 ---
 
+[v0.0.12]: https://github.com/pdiomede/grump/releases/tag/v0.0.12
+[v0.0.11]: https://github.com/pdiomede/grump/releases/tag/v0.0.11
 [v0.0.10]: https://github.com/pdiomede/grump/releases/tag/v0.0.10
 [v0.2.0]: https://github.com/pdiomede/grump/releases/tag/v0.2.0
 [v0.1.1]: https://github.com/pdiomede/grump/releases/tag/v0.1.1

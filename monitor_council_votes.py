@@ -5,8 +5,8 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.10"
-LAST_UPDATE = "2025-10-28"
+VERSION = "0.0.12"
+LAST_UPDATE = "2025-11-05"
 
 import os
 import sys
@@ -655,6 +655,45 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             text-decoration: underline;
         }}
         
+        .breadcrumb {{
+            padding: 15px 30px;
+            background: #0C0A1D;
+            border-bottom: 1px solid #9CA3AF;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        
+        .breadcrumb a {{
+            color: #9CA3AF;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.3s ease;
+        }}
+        
+        .breadcrumb a:hover {{
+            color: #F8F6FF;
+            text-decoration: underline;
+        }}
+        
+        .breadcrumb .home-icon::before {{
+            content: "🏠";
+            font-size: 16px;
+        }}
+        
+        .breadcrumb-separator {{
+            color: #9CA3AF;
+            font-weight: 400;
+        }}
+        
+        .breadcrumb span:last-child {{
+            color: #F8F6FF;
+            font-weight: 500;
+        }}
+        
         @media (max-width: 768px) {{
             .footer-top {{
                 flex-direction: column;
@@ -676,6 +715,15 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             <h1>🗳️ The Graph Council Voting Monitor</h1>
             <p><a href="https://snapshot.org/#/s:{SNAPSHOT_SPACE}" target="_blank" class="header-link">Tracking voting activity for The Graph Council</a></p>
             <p>Last updated: {timestamp}</p>
+        </div>
+        
+        <div class="breadcrumb">
+            <a href="../index.html">
+                <span class="home-icon"></span>
+                <b>Home</b>
+            </a>
+            <span class="breadcrumb-separator">>></span>
+            <span>GRUMP Dashboard</span>
         </div>
         
         <div class="content">
