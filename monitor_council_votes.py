@@ -274,6 +274,8 @@ def analyze_voting_status(council_wallets: List[str], wallet_names: Dict[str, st
 
 def format_hours(hours):
     """Format hours to readable format"""
+    if hours is None:
+        return "N/A"
     if hours < 1:
         return f"{int(round(hours * 60))} min"
     elif hours < 24:
@@ -473,21 +475,30 @@ def generate_goose_dashboard_html() -> str:
             <div class="goose-leaderboard" style="background: rgba(156, 163, 175, 0.05); border: 1px solid #9CA3AF; border-radius: 12px; overflow: hidden;">
 """
         
-        # Add leaderboard items
-        for index, member in enumerate(leaderboard):
-            # Build response time breakdown
-            response_breakdown = ''
-            if member['snapshot_response_time_hours'] is not None and member['safe_response_time_hours'] is not None:
-                response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Snapshot: {format_hours(member["snapshot_response_time_hours"])} | Safe: {format_hours(member["safe_response_time_hours"])}</div>'
-            elif member['snapshot_response_time_hours'] is not None:
-                response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Snapshot: {format_hours(member["snapshot_response_time_hours"])}</div>'
-            elif member['safe_response_time_hours'] is not None:
-                response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Safe: {format_hours(member["safe_response_time_hours"])}</div>'
-            
-            bg_style = 'background: linear-gradient(90deg, rgba(111, 76, 255, 0.08) 0%, rgba(0, 0, 0, 0) 100%);' if index < 3 else ''
-            rank_color = '#FFA801' if index < 3 else '#6F4CFF'
-            
-            html += f"""
+        # Check if leaderboard is empty
+        if not leaderboard:
+            html += """
+                <div style="padding: 40px; text-align: center; color: #9CA3AF;">
+                    <p>No leaderboard data available</p>
+                    <p style="font-size: 0.85em; margin-top: 10px;">Collect governance data to generate rankings.</p>
+                </div>
+"""
+        else:
+            # Add leaderboard items
+            for index, member in enumerate(leaderboard):
+                # Build response time breakdown
+                response_breakdown = ''
+                if member['snapshot_response_time_hours'] is not None and member['safe_response_time_hours'] is not None:
+                    response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Snapshot: {format_hours(member["snapshot_response_time_hours"])} | Safe: {format_hours(member["safe_response_time_hours"])}</div>'
+                elif member['snapshot_response_time_hours'] is not None:
+                    response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Snapshot: {format_hours(member["snapshot_response_time_hours"])}</div>'
+                elif member['safe_response_time_hours'] is not None:
+                    response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Safe: {format_hours(member["safe_response_time_hours"])}</div>'
+                
+                bg_style = 'background: linear-gradient(90deg, rgba(111, 76, 255, 0.08) 0%, rgba(0, 0, 0, 0) 100%);' if index < 3 else ''
+                rank_color = '#FFA801' if index < 3 else '#6F4CFF'
+                
+                html += f"""
                 <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(156, 163, 175, 0.2); {bg_style}">
                     <div style="font-size: 1.3em; font-weight: 700; color: {rank_color}; width: 40px; text-align: center;">{index + 1}</div>
                     <div style="flex: 1; margin-left: 15px;">

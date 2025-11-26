@@ -18,6 +18,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provides guidance to run data collection if needed
   - Improves error handling and user experience
 
+- **GOOSE Dashboard Empty Leaderboard Handling**
+  - Added check for empty leaderboard before rendering
+  - Displays "No leaderboard data available" message when empty
+  - Prevents broken UI with empty leaderboard section
+  - Includes guidance to collect governance data
+
+- **format_hours() None Value Handling**
+  - Added None check in `format_hours()` function
+  - Returns "N/A" instead of crashing with TypeError
+  - Prevents crash when response time data is missing
+  - Improves resilience of GOOSE dashboard
+
 - **Code Quality**
   - Removed unused `.alert-section` CSS class
   - Verified all HTML tags are properly balanced (85 divs, 34 spans)
