@@ -1306,8 +1306,8 @@ def send_slack_notification(data: Dict, council_wallets: List[str]) -> bool:
             formatted_title = format_proposal_title(title)
             proposal_id = proposal['id']
             
-            # Calculate missing votes
-            missing_votes = COUNCIL_MEMBERS_COUNT - proposal['council_votes']
+            # Calculate missing votes (ensure non-negative)
+            missing_votes = max(0, COUNCIL_MEMBERS_COUNT - proposal['council_votes'])
             
             # Calculate days left (could be negative if ended)
             days_left = proposal['days_left']

@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents crash when response time data is missing
   - Improves resilience of GOOSE dashboard
 
+- **Negative Missing Votes Bug**
+  - Fixed calculation that could produce negative missing votes
+  - Added `max(0, ...)` to ensure missing_votes is never negative
+  - Prevents nonsensical "-2 missing votes" in Slack messages
+  - Handles edge case where wallets.txt has more addresses than COUNCIL_MEMBERS_COUNT
+
 - **Code Quality**
   - Removed unused `.alert-section` CSS class
   - Verified all HTML tags are properly balanced (85 divs, 34 spans)
