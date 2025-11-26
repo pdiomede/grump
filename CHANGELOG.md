@@ -5,6 +5,161 @@ All notable changes to The Graph Council Voting Monitor will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.0.13] - 2025-11-26
+
+### Added
+
+#### THE GRUMPY GOOSE Dashboard Integration (Major Feature)
+- **Integrated Governance Analytics Dashboard**
+  - Full integration of THE GRUMPY GOOSE (Governance Oversight & Operational Speed Evaluator)
+  - Embedded analytics dashboard within the main voting monitor
+  - Displays comprehensive council performance metrics
+  - Located in new section before the footer with divider separation
+  - Purple gradient styling matching The Graph brand guidelines
+
+- **Performance Metrics**
+  - **Summary Cards**: Total Proposals, Total Transactions, Total Votes, Active Members
+  - **Time to Quorum Statistics**: Average, Median, Min, Max response times
+    - All Platforms combined view
+    - Snapshot-specific metrics
+    - Safe Multisig-specific metrics
+  - **Top 10 Leaderboard**: Ranked by participation rate
+    - Participation percentage display
+    - Average response time (overall and per platform)
+    - Vote breakdown (Snapshot vs Safe)
+    - Top 3 members highlighted with golden rank indicators
+
+- **Helper Modules Created**
+  - `goose_config.py` - Configuration settings for GOOSE
+  - `goose_database.py` - SQLite database connection utilities
+  - `goose_council.py` - Council member name lookup and formatting
+  - `goose_metrics.py` - Metrics calculation functions (time to quorum, participation rates, response times)
+  - `format_hours()` helper function for human-readable time formatting
+
+- **Database Integration**
+  - Copied `goose.db` from grumpygoose subfolder to root directory
+  - Copied `council_members.csv` for member name resolution
+  - SQLite database tracks proposals, transactions, votes, and members
+  - Historical governance data analysis
+
+- **Smart Name Display**
+  - Council member names displayed as "Name (0xabc...xyz)" format
+  - Pulls names from council_members.csv
+  - Fallback to shortened addresses if name not available
+  - Consistent formatting across all leaderboard entries
+
+### Changed
+
+- **Updated "Last updated" Timestamp**
+  - Reduced font size to 0.85em for subtler display
+  - Better visual hierarchy in header section
+
+- **Section Organization**
+  - Added new goose-section with divider before footer
+  - Separate content area for GOOSE dashboard
+  - Maintains clean separation between voting alerts and performance analytics
+
+### Technical Details
+
+**Architecture:**
+```
+monitor_council_votes.py
+    ↓
+Imports GOOSE modules (with graceful fallback)
+    ↓
+generate_goose_dashboard_html()
+    ↓
+Fetches data from goose.db
+    ↓
+Renders inline HTML in goose-section
+```
+
+**Data Flow:**
+1. GOOSE modules collect governance data (from grumpygoose/setup.py)
+2. Data stored in goose.db SQLite database
+3. monitor_council_votes.py reads from goose.db
+4. Dashboard generated and embedded in HTML output
+5. Single index.html file contains both voting alerts and analytics
+
+**Dependencies:**
+- No new external dependencies (uses existing sqlite3)
+- Graceful fallback if GOOSE modules unavailable
+- Error handling displays friendly message on failure
+
+**File Structure:**
+```
+grump/
+├── goose.db                    # SQLite governance metrics database (NEW)
+├── council_members.csv         # Council member information (NEW)
+├── goose_config.py            # GOOSE configuration (NEW)
+├── goose_database.py          # Database utilities (NEW)
+├── goose_council.py           # Member lookup (NEW)
+├── goose_metrics.py           # Metrics calculations (NEW)
+├── monitor_council_votes.py  # Updated with GOOSE integration
+├── GOOSE_INTEGRATION.md       # Integration documentation (NEW)
+└── grumpygoose/              # Original GOOSE app (unchanged)
+```
+
+**Styling:**
+- Purple gradient cards (#6F4CFF to #4C66FF)
+- Semi-transparent backgrounds for metrics
+- Inline CSS for self-contained HTML
+- Responsive layout with grid display
+- Top 3 leaderboard members with gold rank color (#FFA801)
+- Consistent with The Graph brand guidelines
+
+### Benefits
+
+**For Council Members:**
+- 📊 See your own participation rate and response time
+- 🏆 Track your ranking among peers
+- 📈 Understand overall council performance
+- ⏱️ View time-to-quorum benchmarks
+
+**For Administrators:**
+- 📉 Identify slow response patterns
+- 🎯 Track participation trends
+- 📊 Data-driven governance insights
+- 🔍 Historical performance analysis
+
+**For The Graph Ecosystem:**
+- 🌐 Transparent governance metrics
+- 📈 Accountability through visibility
+- 🎨 Professional, branded dashboard
+- 🔄 Automated daily updates
+
+### Documentation
+
+- **GOOSE_INTEGRATION.md** - Comprehensive integration guide
+  - Setup instructions
+  - File locations and structure
+  - Database requirements
+  - Updating procedures
+  - Troubleshooting tips
+
+### Compatibility
+
+- Backwards compatible with existing setup
+- Graceful fallback if GOOSE modules not available
+- No breaking changes to existing functionality
+- Works with existing cron jobs and automation
+
+### Data Update Workflow
+
+To refresh GOOSE metrics:
+```bash
+# 1. Collect latest governance data
+cd grumpygoose
+python setup.py
+
+# 2. Copy updated database
+cp goose.db ..
+
+# 3. Regenerate dashboard
+cd ..
+python3 monitor_council_votes.py
+```
+
 ## [v0.0.12] - 2025-11-05
 
 ### Added
@@ -1173,6 +1328,7 @@ Potential features for future versions:
 
 ## Version History
 
+- **[v0.0.13] - 2025-11-26** - THE GRUMPY GOOSE dashboard integration (Major Feature)
 - **[v0.0.12] - 2025-11-05** - Breadcrumb navigation with home emoji
 - **[v0.0.11] - 2025-11-05** - Email-based OTP authentication system (Major Feature)
 - **[v0.0.10] - 2025-10-28** - Named council members with address,name format
@@ -1191,6 +1347,7 @@ Potential features for future versions:
 
 ---
 
+[v0.0.13]: https://github.com/pdiomede/grump/releases/tag/v0.0.13
 [v0.0.12]: https://github.com/pdiomede/grump/releases/tag/v0.0.12
 [v0.0.11]: https://github.com/pdiomede/grump/releases/tag/v0.0.11
 [v0.0.10]: https://github.com/pdiomede/grump/releases/tag/v0.0.10

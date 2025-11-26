@@ -5,8 +5,8 @@ Monitors Snapshot proposals and tracks council member voting activity
 """
 
 # Version
-VERSION = "0.0.12"
-LAST_UPDATE = "2025-11-05"
+VERSION = "0.0.13"
+LAST_UPDATE = "2025-11-26"
 
 import os
 import sys
@@ -17,6 +17,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict, Set
 from dotenv import load_dotenv
+
+# GOOSE imports
+try:
+    from goose_metrics import (
+        get_time_to_quorum_stats,
+        get_member_response_times,
+        get_participation_rate,
+        get_summary_stats
+    )
+    from goose_council import format_member_name
+    GOOSE_AVAILABLE = True
+except ImportError:
+    GOOSE_AVAILABLE = False
 
 # Load environment variables
 load_dotenv()
@@ -257,6 +270,244 @@ def analyze_voting_status(council_wallets: List[str], wallet_names: Dict[str, st
             "total_alerts": len(all_alerts)
         }
     }
+
+
+def format_hours(hours):
+    """Format hours to readable format"""
+    if hours < 1:
+        return f"{int(round(hours * 60))} min"
+    elif hours < 24:
+        return f"{hours:.1f}h"
+    else:
+        days = hours / 24
+        return f"{days:.1f} days"
+
+
+def generate_goose_dashboard_html() -> str:
+    """Generate THE GRUMPY GOOSE dashboard HTML section"""
+    if not GOOSE_AVAILABLE:
+        return """
+            <div class="goose-content">
+                <p style="color: #9CA3AF;">GOOSE dashboard unavailable - required modules not found</p>
+            </div>
+"""
+    
+    try:
+        # Fetch all data
+        summary = get_summary_stats()
+        quorum_all = get_time_to_quorum_stats()
+        quorum_snapshot = get_time_to_quorum_stats(platform='snapshot')
+        quorum_safe = get_time_to_quorum_stats(platform='safe')
+        participation = get_participation_rate()
+        response_times = get_member_response_times()
+        
+        # Create response time lookup
+        response_dict = {member['address']: member for member in response_times}
+        
+        # Combine leaderboard data (top 10 by participation)
+        leaderboard = []
+        for member in participation[:10]:
+            address = member['address']
+            response_data = response_dict.get(address, {})
+            
+            leaderboard.append({
+                'address': address,
+                'display_name': format_member_name(address),
+                'participation_rate': member['participation_rate'],
+                'snapshot_votes': member['snapshot_votes'],
+                'safe_votes': member['safe_votes'],
+                'total_votes': member['total_votes'],
+                'avg_response_time_hours': response_data.get('avg_response_time_hours', 0),
+                'snapshot_response_time_hours': response_data.get('snapshot_response_time_hours'),
+                'safe_response_time_hours': response_data.get('safe_response_time_hours')
+            })
+        
+        # Generate HTML
+        html = f"""
+            <div class="goose-header" style="text-align: center; margin-bottom: 30px;">
+                <h2 style="font-size: 2em; color: #F8F6FF; margin-bottom: 10px;">🪿 THE GRUMPY GOOSE</h2>
+                <p style="font-size: 1em; color: #9CA3AF; font-weight: 300;">Governance Oversight & Operational Speed Evaluator</p>
+            </div>
+
+            <div class="goose-summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                <div class="goose-card" style="background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;">
+                    <h3 style="font-size: 0.85em; font-weight: 500; margin-bottom: 10px; opacity: 0.9;">Total Proposals</h3>
+                    <div style="font-size: 2em; font-weight: 700;">{summary['total_proposals']}</div>
+                </div>
+                <div class="goose-card" style="background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;">
+                    <h3 style="font-size: 0.85em; font-weight: 500; margin-bottom: 10px; opacity: 0.9;">Total Transactions</h3>
+                    <div style="font-size: 2em; font-weight: 700;">{summary['total_transactions']}</div>
+                </div>
+                <div class="goose-card" style="background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;">
+                    <h3 style="font-size: 0.85em; font-weight: 500; margin-bottom: 10px; opacity: 0.9;">Total Votes</h3>
+                    <div style="font-size: 2em; font-weight: 700;">{summary['total_votes']}</div>
+                </div>
+                <div class="goose-card" style="background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;">
+                    <h3 style="font-size: 0.85em; font-weight: 500; margin-bottom: 10px; opacity: 0.9;">Active Members</h3>
+                    <div style="font-size: 2em; font-weight: 700;">{summary['unique_voters']}</div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.5em; color: #F8F6FF; margin-bottom: 20px;">⏱️ Time to Quorum (6 of 10 signatures)</h3>
+
+            <div class="goose-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+"""
+        
+        # Add quorum stats for all platforms
+        html += """
+                <div class="goose-metric-card" style="background: rgba(156, 163, 175, 0.1); border: 1px solid #9CA3AF; border-radius: 12px; padding: 20px;">
+                    <h4 style="font-size: 1.1em; color: #F8F6FF; margin-bottom: 15px;">All Platforms</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+"""
+        
+        if quorum_all:
+            html += f"""
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Average:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_all['avg'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Median:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_all['median'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Min:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_all['min'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span style="color: #9CA3AF;">Max:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_all['max'])}</span>
+                        </div>
+"""
+        else:
+            html += """
+                        <div style="color: #9CA3AF;">No data available</div>
+"""
+        
+        html += """
+                    </div>
+                </div>
+
+                <div class="goose-metric-card" style="background: rgba(156, 163, 175, 0.1); border: 1px solid #9CA3AF; border-radius: 12px; padding: 20px;">
+                    <h4 style="font-size: 1.1em; color: #F8F6FF; margin-bottom: 15px;">Snapshot</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+"""
+        
+        if quorum_snapshot:
+            html += f"""
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Average:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_snapshot['avg'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Median:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_snapshot['median'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Min:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_snapshot['min'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span style="color: #9CA3AF;">Max:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_snapshot['max'])}</span>
+                        </div>
+"""
+        else:
+            html += """
+                        <div style="color: #9CA3AF;">No data available</div>
+"""
+        
+        html += """
+                    </div>
+                </div>
+
+                <div class="goose-metric-card" style="background: rgba(156, 163, 175, 0.1); border: 1px solid #9CA3AF; border-radius: 12px; padding: 20px;">
+                    <h4 style="font-size: 1.1em; color: #F8F6FF; margin-bottom: 15px;">Safe Multisig</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+"""
+        
+        if quorum_safe:
+            html += f"""
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Average:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_safe['avg'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Median:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_safe['median'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(156, 163, 175, 0.2);">
+                            <span style="color: #9CA3AF;">Min:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_safe['min'])}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                            <span style="color: #9CA3AF;">Max:</span>
+                            <span style="color: #F8F6FF; font-weight: 600;">{format_hours(quorum_safe['max'])}</span>
+                        </div>
+"""
+        else:
+            html += """
+                        <div style="color: #9CA3AF;">No data available</div>
+"""
+        
+        html += """
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.5em; color: #F8F6FF; margin-bottom: 20px;">🏆 Leaderboard</h3>
+            <div class="goose-leaderboard" style="background: rgba(156, 163, 175, 0.05); border: 1px solid #9CA3AF; border-radius: 12px; overflow: hidden;">
+"""
+        
+        # Add leaderboard items
+        for index, member in enumerate(leaderboard):
+            # Build response time breakdown
+            response_breakdown = ''
+            if member['snapshot_response_time_hours'] is not None and member['safe_response_time_hours'] is not None:
+                response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Snapshot: {format_hours(member["snapshot_response_time_hours"])} | Safe: {format_hours(member["safe_response_time_hours"])}</div>'
+            elif member['snapshot_response_time_hours'] is not None:
+                response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Snapshot: {format_hours(member["snapshot_response_time_hours"])}</div>'
+            elif member['safe_response_time_hours'] is not None:
+                response_breakdown = f'<div style="font-size: 0.75em; color: #9CA3AF; margin-top: 5px;">Safe: {format_hours(member["safe_response_time_hours"])}</div>'
+            
+            bg_style = 'background: linear-gradient(90deg, rgba(111, 76, 255, 0.08) 0%, rgba(0, 0, 0, 0) 100%);' if index < 3 else ''
+            rank_color = '#FFA801' if index < 3 else '#6F4CFF'
+            
+            html += f"""
+                <div style="display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid rgba(156, 163, 175, 0.2); {bg_style}">
+                    <div style="font-size: 1.3em; font-weight: 700; color: {rank_color}; width: 40px; text-align: center;">{index + 1}</div>
+                    <div style="flex: 1; margin-left: 15px;">
+                        <div style="font-size: 0.95em; font-weight: 600; color: #F8F6FF; font-family: monospace;">{member['display_name']}</div>
+                        <div style="font-size: 0.75em; color: #9CA3AF; margin-top: 3px;">
+                            Snapshot: {member['snapshot_votes']} | Safe: {member['safe_votes']} | Total: {member['total_votes']}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 25px; align-items: center;">
+                        <div style="text-align: center; min-width: 100px;">
+                            <div style="font-size: 0.7em; color: #9CA3AF; text-transform: uppercase; margin-bottom: 3px;">Participation</div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: #6F4CFF;">{member['participation_rate']:.1f}%</div>
+                        </div>
+                        <div style="text-align: center; min-width: 100px;">
+                            <div style="font-size: 0.7em; color: #9CA3AF; text-transform: uppercase; margin-bottom: 3px;">Avg Response</div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: #6F4CFF;">{format_hours(member['avg_response_time_hours'])}</div>
+                            {response_breakdown}
+                        </div>
+                    </div>
+                </div>
+"""
+        
+        html += """
+            </div>
+"""
+        
+        return html
+        
+    except Exception as e:
+        return f"""
+            <div class="goose-content">
+                <p style="color: #9CA3AF;">Error generating GOOSE dashboard: {str(e)}</p>
+            </div>
+"""
 
 
 def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
@@ -583,6 +834,20 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             font-size: 1.2rem;
         }}
         
+        .goose-section {{
+            padding: 30px;
+            background: #0C0A1D;
+            border-top: 1px solid #9CA3AF;
+            margin-top: 20px;
+        }}
+        
+        .goose-content {{
+            max-width: 1140px;
+            margin: 0 auto;
+            color: #9CA3AF;
+            text-align: center;
+        }}
+        
         .footer {{
             padding: 20px 30px;
             background: #0C0A1D;
@@ -730,14 +995,14 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             <b>Home</b>
         </a>
         <span class="breadcrumb-separator">>></span>
-        <span>GRUMP Dashboard</span>
+        <span>The Grumpy Goose Dashboard</span>
     </div>
     
     <div class="container">
         <div class="header">
-            <h1>😡 GRUMP Dashboard </h1>
+            <h1>🪿 The Grumpy Goose Dashboard </h1>
             <p><a href="https://snapshot.org/#/s:{SNAPSHOT_SPACE}" target="_blank" class="header-link">Tracking voting activity for The Graph Council</a></p>
-            <p>Last updated: {timestamp}</p>
+            <p style="font-size: 0.85em;">Last updated: {timestamp}</p>
         </div>
         
         <div class="content">
@@ -922,6 +1187,13 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
 """
     
     html += f"""
+        </div>
+        
+        <!-- goose section -->
+        <div class="goose-section">
+            <div class="goose-content">
+{generate_goose_dashboard_html()}
+            </div>
         </div>
         
         <div class="footer">
