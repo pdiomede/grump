@@ -48,6 +48,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fallback to shortened addresses if name not available
   - Consistent formatting across all leaderboard entries
 
+- **Deployment Automation**
+  - Added `deploy_goose_to_production.sh` script for easy VPS deployment
+  - Automated file copying to production path (`/var/www/iproot/grump`)
+  - Automatic permission setting for www-data
+  - Built-in deployment testing and validation
+  - One-command deployment process
+
 ### Changed
 
 - **Updated "Last updated" Timestamp**
@@ -58,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added new goose-section with divider before footer
   - Separate content area for GOOSE dashboard
   - Maintains clean separation between voting alerts and performance analytics
+  - Streamlined GOOSE section layout (removed redundant header)
 
 ### Technical Details
 

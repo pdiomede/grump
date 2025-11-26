@@ -324,10 +324,6 @@ def generate_goose_dashboard_html() -> str:
         
         # Generate HTML
         html = f"""
-            <div class="goose-header" style="text-align: center; margin-bottom: 30px;">
-                <h2 style="font-size: 2em; color: #F8F6FF; margin-bottom: 10px;">🪿 THE GRUMPY GOOSE</h2>
-                <p style="font-size: 1em; color: #9CA3AF; font-weight: 300;">Governance Oversight & Operational Speed Evaluator</p>
-            </div>
 
             <div class="goose-summary-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
                 <div class="goose-card" style="background: linear-gradient(135deg, #6F4CFF 0%, #4C66FF 100%); padding: 20px; border-radius: 12px; text-align: center; color: white;">
