@@ -616,12 +616,8 @@ def generate_html_report(data: Dict, council_wallets: List[str]) -> str:
             color: #fbbf24;
         }}
         
-        .summary-card.member-count .value {{
+        .summary-card        .member-count .value {{
             color: #22c55e;
-        }}
-        
-        .alert-section {{
-            margin-bottom: 30px;
         }}
         
         .section-title {{
