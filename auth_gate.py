@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-GRUMP Dashboard Authentication Gateway
+The Grumpy Goose Dashboard Authentication Gateway
 ====================================
-Lightweight authentication layer for the GRUMP Dashboard.
+Lightweight authentication layer for The Grumpy Goose Dashboard.
 Uses email-based OTP authentication with 7-day session cookies.
 """
 
@@ -140,13 +140,13 @@ def send_otp_email(email, otp_code):
     """Send OTP code via email"""
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = 'Your GRUMP Dashboard Login Code'
+        msg['Subject'] = 'Your Grumpy Goose Dashboard Login Code'
         msg['From'] = SMTP_FROM
         msg['To'] = email
         
         # Create email body
         text = f"""
-GRUMP Dashboard - One-Time Password
+The Grumpy Goose Dashboard - One-Time Password
 
 Your login code is: {otp_code}
 
@@ -155,7 +155,7 @@ This code will expire in 10 minutes.
 If you didn't request this code, please ignore this email.
 
 ---
-The Graph Protocol - GRUMP Dashboard
+The Graph Protocol - The Grumpy Goose Dashboard
 {DASHBOARD_URL}
 """
         
@@ -177,10 +177,10 @@ The Graph Protocol - GRUMP Dashboard
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">🔐 😡 GRUMP Dashboard</div>
+            <div class="logo">🪿 The Grumpy Goose Dashboard</div>
         </div>
         <h2 style="color: #CC5500;">Your Login Code</h2>
-        <p style="color: #5D4037;">Use this one-time password to access the GRUMP Dashboard:</p>
+        <p style="color: #5D4037;">Use this one-time password to access the The Grumpy Goose Dashboard:</p>
         <div class="otp-code">
             <div class="code">{otp_code}</div>
         </div>
@@ -188,7 +188,7 @@ The Graph Protocol - GRUMP Dashboard
         <p class="info">If you didn't request this code, please ignore this email.</p>
         <div class="footer">
             <p><strong>The Graph Protocol</strong></p>
-            <p>GRUMP Dashboard</p>
+            <p>The Grumpy Goose Dashboard</p>
             <p><a href="{DASHBOARD_URL}" style="color: #FF8C42; text-decoration: none;">{DASHBOARD_URL}</a></p>
         </div>
     </div>
