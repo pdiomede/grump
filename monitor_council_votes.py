@@ -292,6 +292,15 @@ def generate_goose_dashboard_html() -> str:
             </div>
 """
     
+    # Check if goose.db exists before attempting to use it
+    if not os.path.exists('goose.db'):
+        return """
+            <div class="goose-content">
+                <p style="color: #9CA3AF;">GOOSE dashboard unavailable - goose.db database not found</p>
+                <p style="color: #9CA3AF; font-size: 0.85em; margin-top: 10px;">Run data collection from grumpygoose folder to generate metrics.</p>
+            </div>
+"""
+    
     try:
         # Fetch all data
         summary = get_summary_stats()
@@ -303,6 +312,15 @@ def generate_goose_dashboard_html() -> str:
         
         # Create response time lookup
         response_dict = {member['address']: member for member in response_times}
+        
+        # Check if we have data to display
+        if not participation or summary['total_votes'] == 0:
+            return """
+            <div class="goose-content">
+                <p style="color: #9CA3AF;">GOOSE dashboard unavailable - no governance data found</p>
+                <p style="color: #9CA3AF; font-size: 0.85em; margin-top: 10px;">Run data collection from grumpygoose folder to collect metrics.</p>
+            </div>
+"""
         
         # Combine leaderboard data (top 10 by participation)
         leaderboard = []

@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v0.0.13] - 2025-11-26
 
+### Fixed
+
+#### Bug Fixes
+- **GOOSE Dashboard Database Check**
+  - Added validation to check if `goose.db` exists before attempting database operations
+  - Prevents crash when database file is missing
+  - Displays helpful error message: "goose.db database not found"
+  - Added check for empty database (no votes/proposals)
+  - Provides guidance to run data collection if needed
+  - Improves error handling and user experience
+
+- **Code Quality**
+  - Removed unused `.alert-section` CSS class
+  - Verified all HTML tags are properly balanced (85 divs, 34 spans)
+  - Cleaned up CSS for optimal performance
+
 ### Added
 
 #### THE GRUMPY GOOSE Dashboard Integration (Major Feature)
